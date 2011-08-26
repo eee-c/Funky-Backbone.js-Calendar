@@ -3,7 +3,8 @@
  * Module dependencies.
  */
 
-var express = require('express');
+var express = require('express-unstable'),
+    http = require('http');
 
 var app = module.exports = express.createServer();
 
@@ -19,11 +20,11 @@ app.configure(function(){
 });
 
 app.configure('development', function(){
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
 app.configure('production', function(){
-  app.use(express.errorHandler()); 
+  app.use(express.errorHandler());
 });
 
 // Routes
@@ -31,6 +32,39 @@ app.configure('production', function(){
 app.get('/', function(req, res){
   res.render('index', {
     title: 'Express'
+  });
+});
+
+app.get('/events', function(req, res){
+  var options = {
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/_all_docs?include_docs=true'
+  };
+
+  http.get(options, function(couch_response) {
+    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+
+    couch_response.pipe(res);
+  }).on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+});
+
+
+app.get('/events/:id', function(req, res){
+  var options = {
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/' + req.params.id
+  };
+
+  http.get(options, function(couch_response) {
+    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+
+    couch_response.pipe(res);
+  }).on('error', function(e) {
+    console.log("Got error: " + e.message);
   });
 });
 
