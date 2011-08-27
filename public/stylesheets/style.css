@@ -6,3 +6,19 @@ body {
 a {
   color: #00B7FF;
 }
+
+
+th {
+  background-color: #c00;
+  color: white;
+  font-size: 1.2em;
+}
+
+table td {
+  border: 1px solid black;
+  width: 90px;
+  height: 50px;
+  vertical-align: top;
+  font-size: 0.8em;
+  font-weight: bold;
+}
