@@ -59,3 +59,41 @@ table#calendar
     td.thursday
     td.friday
     td.saturday
+
+script
+  $(function() {
+    window.Event = Backbone.Model.extend({});
+
+    window.EventList = Backbone.Collection.extend({
+      model: Event,
+      url: '/events',
+      parse: function(response) {
+        return _(response.rows).map(function(row) { return row.doc ;});
+      }
+    });
+
+    window.Events = new EventList;
+
+    window.AppView = Backbone.View.extend({
+      initialize: function() {
+        Events.bind('all', this.render, this);
+        Events.fetch();
+      },
+      render: function() {
+        Events.each(function(event) {
+          var start_date = event.get("startDate"),
+              title = event.get("title"),
+              description = event.get("description"),
+              el = '#' + start_date;
+
+          $(el).html(
+            '<span title="' + description + '">' +
+              title +
+            '</span>'
+          );
+        });
+      }
+    });
+
+    window.App = new AppView;
+  });
