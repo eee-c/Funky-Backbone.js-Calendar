@@ -40,7 +40,9 @@ table#calendar
     td.tuesday
     td.wednesday
     td#2011-08-25.thursday
+      span.day 25
     td#2011-08-26.friday
+      span.day 26
     td.saturday
   tr#week5
     td.sunday
@@ -86,11 +88,9 @@ script
               description = event.get("description"),
               el = '#' + start_date;
 
-          $(el).html(
-            '<span title="' + description + '">' +
+          $('<span class="event" title="' + description + '">' +
               title +
-            '</span>'
-          );
+            '</span>').appendTo($(el))
         });
       }
     });

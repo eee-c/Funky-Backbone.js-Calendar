@@ -22,3 +22,18 @@ table td {
   font-size: 0.8em;
   font-weight: bold;
 }
+
+tr .day {
+  display: block;
+  position: absolute;
+  font-size: 3em;
+  font-weight: bold;
+  color: #fbb;
+  z-index: -1;
+}
+
+.event {
+  display: block;
+  padding-left: 10px;
+  padding-top: 5px;
+}
