@@ -127,12 +127,18 @@ script
               description = event.get("description"),
               el = '#' + start_date;
 
-          $('<span class="event" title="' + description + '">' +
-              title +
-            '</span>').appendTo($(el))
+          var template = _.template($('#calendar-event-template').html());
+          $(template({title: title, description: description})).appendTo($(el))
         });
       }
     });
 
     window.App = new AppView;
   });
+
+|<script type="text/template" id="calendar-event-template">
+|  <span class="event" title="<%= description %>">
+|      <%= title %>
+|  </span>
+|</script>
+
