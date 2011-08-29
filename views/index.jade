@@ -115,25 +115,22 @@ script
 
     window.Events = new EventList;
 
-    window.AppView = Backbone.View.extend({
-      initialize: function() {
-        Events.bind('all', this.render, this);
-        Events.fetch();
-      },
+    window.EventView = Backbone.View.extend({
+      template: _.template($('#calendar-event-template').html()),
       render: function() {
-        Events.each(function(event) {
-          var start_date = event.get("startDate"),
-              title = event.get("title"),
-              description = event.get("description"),
-              el = '#' + start_date;
-
-          var template = _.template($('#calendar-event-template').html());
-          $(template({title: title, description: description})).appendTo($(el))
-        });
+        $(this.el).append(this.template(this.model.toJSON()));
+        return this;
       }
     });
 
-    window.App = new AppView;
+    Events.fetch({success: function(collection, response) {
+        collection.each(function(event) {
+          var el = $('#' + event.get("startDate")),
+              view = new EventView({model: event, el: el});
+          view.render();
+        });
+      }
+    });
   });
 
 |<script type="text/template" id="calendar-event-template">
