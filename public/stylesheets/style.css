@@ -16,8 +16,8 @@ th {
 
 table td {
   border: 1px solid black;
-  width: 90px;
-  height: 50px;
+  width: 110px;
+  height: 60px;
   vertical-align: top;
   font-size: 0.8em;
   font-weight: bold;
@@ -30,6 +30,10 @@ tr .day-of-month {
   font-weight: bold;
   color: #fbb;
   z-index: -1;
+}
+
+tr td.other-month .day-of-month {
+  color: #ccc;
 }
 
 .event {

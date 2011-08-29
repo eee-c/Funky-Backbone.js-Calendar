@@ -76,11 +76,21 @@ script
           day_elements = week_el.find('td');
 
       _([0,1,2,3,4,5,6]).each(function(day) {
-        var html = '<span class="day-of-month">' + date.getDate() + '</span>';
-        $(day_elements[day]).html(html);
+        var day_element = day_elements[day],
+            other_month = (date.getMonth() != today.getMonth()),
+            html = '<span class="day-of-month">' + date.getDate() + '</span>';
+        var el = $(day_element).
+          html(html).
+          addClass(other_month ? 'other-month' : '');
         date = new Date(date.getTime() + 24*60*60*1000);
       });
     });
+
+    // remove whole week from next month
+    var week5_other_month = _($('#week5').find('td')).all(function(el) {
+      return $(el).hasClass('other-month')
+    });
+    if (week5_other_month) { $('#week5').hide() }
   }
 
 script
