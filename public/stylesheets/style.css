@@ -23,7 +23,7 @@ table td {
   font-weight: bold;
 }
 
-tr .day {
+tr .day-of-month {
   display: block;
   position: absolute;
   font-size: 3em;

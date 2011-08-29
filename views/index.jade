@@ -10,7 +10,7 @@ table#calendar
       th T
       th F
       th S
-  tr#week1
+  tr#week0
     td.sunday
     td.monday 1
     td.tuesday
@@ -18,7 +18,7 @@ table#calendar
     td.thursday
     td.friday
     td.saturday
-  tr#week2
+  tr#week1
     td.sunday
     td.monday 8
     td.tuesday
@@ -26,7 +26,7 @@ table#calendar
     td.thursday
     td.friday
     td.saturday
-  tr#week3
+  tr#week2
     td.sunday
     td.monday 15
     td.tuesday
@@ -34,7 +34,7 @@ table#calendar
     td.thursday
     td.friday
     td.saturday
-  tr#week4
+  tr#week3
     td.sunday
     td.monday 22
     td.tuesday
@@ -44,7 +44,7 @@ table#calendar
     td#2011-08-26.friday
       span.day 26
     td.saturday
-  tr#week5
+  tr#week4
     td.sunday
     td.monday 29
     td.tuesday
@@ -52,8 +52,7 @@ table#calendar
     td.thursday
     td.friday
     td.saturday
-
-  tr#week-template(style="display:none")
+  tr#week5
     td.sunday
     td.monday
     td.tuesday
@@ -61,6 +60,28 @@ table#calendar
     td.thursday
     td.friday
     td.saturday
+
+script
+  $(add_dates_to_calendar);
+
+  function add_dates_to_calendar() {
+    var today = new Date(),
+        firstOfTheMonth = new Date(today.getFullYear(), today.getMonth(), 1),
+        firstSunday = new Date(firstOfTheMonth.getTime() -
+                               firstOfTheMonth.getDay()*24*60*60*1000);
+
+    var date = firstSunday;
+    _([0,1,2,3,4,5]).each(function(week) {
+      var week_el = $('#week' + week),
+          day_elements = week_el.find('td');
+
+      _([0,1,2,3,4,5,6]).each(function(day) {
+        var html = '<span class="day-of-month">' + date.getDate() + '</span>';
+        $(day_elements[day]).html(html);
+        date = new Date(date.getTime() + 24*60*60*1000);
+      });
+    });
+  }
 
 script
   $(function() {
