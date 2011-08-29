@@ -12,7 +12,7 @@ table#calendar
       th S
   tr#week0
     td.sunday
-    td.monday 1
+    td.monday
     td.tuesday
     td.wednesday
     td.thursday
@@ -20,7 +20,7 @@ table#calendar
     td.saturday
   tr#week1
     td.sunday
-    td.monday 8
+    td.monday
     td.tuesday
     td.wednesday
     td.thursday
@@ -28,7 +28,7 @@ table#calendar
     td.saturday
   tr#week2
     td.sunday
-    td.monday 15
+    td.monday
     td.tuesday
     td.wednesday
     td.thursday
@@ -36,17 +36,15 @@ table#calendar
     td.saturday
   tr#week3
     td.sunday
-    td.monday 22
+    td.monday
     td.tuesday
     td.wednesday
-    td#2011-08-25.thursday
-      span.day 25
-    td#2011-08-26.friday
-      span.day 26
+    td.thursday
+    td.friday
     td.saturday
   tr#week4
     td.sunday
-    td.monday 29
+    td.monday
     td.tuesday
     td.wednesday
     td.thursday
@@ -64,6 +62,13 @@ table#calendar
 script
   $(add_dates_to_calendar);
 
+  function ISODateString(d) {
+    function pad(n) {return n<10 ? '0'+n : n}
+    return d.getFullYear()+'-'
+      + pad(d.getMonth()+1)+'-'
+      + pad(d.getDate())
+  }
+
   function add_dates_to_calendar() {
     var today = new Date(),
         firstOfTheMonth = new Date(today.getFullYear(), today.getMonth(), 1),
@@ -79,9 +84,12 @@ script
         var day_element = day_elements[day],
             other_month = (date.getMonth() != today.getMonth()),
             html = '<span class="day-of-month">' + date.getDate() + '</span>';
-        var el = $(day_element).
+
+        $(day_element).
           html(html).
+          attr('id', ISODateString(date)).
           addClass(other_month ? 'other-month' : '');
+
         date = new Date(date.getTime() + 24*60*60*1000);
       });
     });
