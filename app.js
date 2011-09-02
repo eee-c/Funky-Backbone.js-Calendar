@@ -68,5 +68,25 @@ app.get('/events/:id', function(req, res){
   });
 });
 
+app.delete('/events/:id', function(req, res){
+  var options = {
+    method: 'DELETE',
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/' + req.params.id,
+    headers: req.headers
+  };
+
+  var couch_req = http.request(options, function(couch_response) {
+    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+
+    couch_response.pipe(res);
+  }).on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+
+  couch_req.end();
+});
+
 app.listen(3000);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

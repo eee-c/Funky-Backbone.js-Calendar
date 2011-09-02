@@ -70,7 +70,7 @@ script
   }
 
   function add_dates_to_calendar() {
-    var today = new Date(),
+    var today = new Date(2011, 7, 30),
         firstOfTheMonth = new Date(today.getFullYear(), today.getMonth(), 1),
         firstSunday = new Date(firstOfTheMonth.getTime() -
                                firstOfTheMonth.getDay()*24*60*60*1000);
@@ -103,7 +103,15 @@ script
 
 script
   $(function() {
-    window.Event = Backbone.Model.extend({});
+    window.Event = Backbone.Model.extend({
+      urlRoot : '/events',
+      initialize: function(attributes) { this.id = attributes['_id']; },
+      destroy: function() {
+        Backbone.Model.prototype.destroy.call(this, {
+          headers: {'If-Match': this.get("_rev")}
+        });
+      }
+    });
 
     window.EventList = Backbone.Collection.extend({
       model: Event,
@@ -117,9 +125,21 @@ script
 
     window.EventView = Backbone.View.extend({
       template: _.template($('#calendar-event-template').html()),
+      initialize: function(options) {
+        options.model.bind('destroy', this.remove, this);
+      },
       render: function() {
         $(this.el).append(this.template(this.model.toJSON()));
         return this;
+      },
+      events: {
+        'click .delete': 'deleteClick'
+      },
+      deleteClick: function() {
+        this.model.destroy();
+      },
+      remove: function() {
+        $(this.el).find('.event').remove();
       }
     });
 
@@ -136,6 +156,7 @@ script
 |<script type="text/template" id="calendar-event-template">
 |  <span class="event" title="<%= description %>">
 |      <%= title %>
+|      <span class="delete">X</span>
 |  </span>
 |</script>
 

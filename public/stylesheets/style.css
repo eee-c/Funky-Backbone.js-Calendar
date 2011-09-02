@@ -41,3 +41,11 @@ tr td.other-month .day-of-month {
   padding-left: 10px;
   padding-top: 5px;
 }
+
+.event .delete {
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  padding: 0px 2px;
+  font-weight: bold;
+}
