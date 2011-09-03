@@ -59,6 +59,30 @@ table#calendar
     td.friday
     td.saturday
 
+#dialog(title="Add calendar event")
+  #calendar-event-start-date
+  p title
+  p
+    input.title(type="text", name="title")
+  p description
+  p
+    input.description(type="text", name="description")
+
+script
+  $(function() {
+    $('#dialog').dialog({
+      autoOpen: false,
+      modal: true,
+      buttons: [
+        { text: "OK",
+          class: "ok",
+          click: function() { $(this).dialog("close"); } },
+        { text: "Cancel",
+          click: function() { $(this).dialog("close"); } }
+      ]
+    });
+  });
+
 script
   $(add_dates_to_calendar);
 
@@ -70,7 +94,7 @@ script
   }
 
   function add_dates_to_calendar() {
-    var today = new Date(2011, 7, 30),
+    var today = new Date(),
         firstOfTheMonth = new Date(today.getFullYear(), today.getMonth(), 1),
         firstSunday = new Date(firstOfTheMonth.getTime() -
                                firstOfTheMonth.getDay()*24*60*60*1000);
@@ -151,6 +175,23 @@ script
         });
       }
     });
+
+
+    window.AppView = Backbone.View.extend({
+      el: $("#dialog").parent(),
+      events: {
+        'click .ok':  'create'
+      },
+      create: function() {
+        console.log("here");
+        Events.create({
+          title: this.el.find('input.title').val(),
+          description: this.el.find('input.description').val(),
+          startDate: "2011-09-01"});
+      }
+    });
+
+    window.AppView = new AppView;
   });
 
 |<script type="text/template" id="calendar-event-template">
