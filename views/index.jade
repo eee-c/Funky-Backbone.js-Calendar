@@ -183,7 +183,6 @@ script
         'click .ok':  'create'
       },
       create: function() {
-        console.log("here");
         Events.create({
           title: this.el.find('input.title').val(),
           description: this.el.find('input.description').val(),
