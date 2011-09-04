@@ -60,7 +60,7 @@ table#calendar
     td.saturday
 
 #dialog(title="Add calendar event")
-  #calendar-event-start-date
+  h2.startDate
   p title
   p
     input.title(type="text", name="title")
@@ -159,7 +159,7 @@ script
       events: {
         'click .delete': 'deleteClick'
       },
-      deleteClick: function() {
+      deleteClick: function(e) {
         this.model.destroy();
       },
       remove: function() {
@@ -176,6 +176,21 @@ script
       }
     });
 
+    window.DayView = Backbone.View.extend({
+      events : {
+        'click': 'click'
+      },
+      click: function() {
+        $('#dialog').
+          dialog('open').
+          find('.startDate').
+          html(this.el.id);
+      }
+    });
+
+    $('#calendar td').each(function() {
+      new DayView({el: this});
+    });
 
     window.AppView = Backbone.View.extend({
       el: $("#dialog").parent(),
@@ -183,10 +198,15 @@ script
         'click .ok':  'create'
       },
       create: function() {
-        Events.create({
+        var event = Events.create({
           title: this.el.find('input.title').val(),
           description: this.el.find('input.description').val(),
-          startDate: "2011-09-01"});
+          startDate: this.el.find('.startDate').html()
+        });
+
+        var el = $('#' + event.get("startDate")),
+            view = new EventView({model: event, el: el});
+        view.render();
       }
     });
 
