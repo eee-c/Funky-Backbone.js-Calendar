@@ -150,27 +150,35 @@ script
     window.AppointmentView = Backbone.View.extend({
       template: _.template($('#calendar-appointment-template').html()),
       initialize: function(options) {
+        this.container = $('#' + this.model.get('startDate'));
         options.model.bind('destroy', this.remove, this);
       },
       render: function() {
-        $(this.el).append(this.template(this.model.toJSON()));
+        $(this.el).html(this.template(this.model.toJSON()));
+        this.container.append($(this.el));
         return this;
       },
       events: {
-        'click .delete': 'deleteClick'
+        'click': 'deleteClick'
       },
       deleteClick: function(e) {
+        console.log("deleteClick");
+
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
         this.model.destroy();
+
+        return false;
       },
       remove: function() {
-        $(this.el).find('.appointment').remove();
+        $(this.el).remove();
       }
     });
 
     Appointments.fetch({success: function(collection, response) {
         collection.each(function(appointment) {
-          var el = $('#' + appointment.get("startDate")),
-              view = new AppointmentView({model: appointment, el: el});
+          var view = new AppointmentView({model: appointment});
           view.render();
         });
       }
@@ -178,9 +186,11 @@ script
 
     window.DayView = Backbone.View.extend({
       events : {
-        'click': 'click'
+        'click': 'addClick'
       },
-      click: function() {
+      addClick: function(e) {
+        console.log("addClick");
+
         $('#dialog').
           dialog('open').
           find('.startDate').
