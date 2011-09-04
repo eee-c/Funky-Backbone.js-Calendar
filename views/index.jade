@@ -214,8 +214,7 @@ script
           startDate: this.el.find('.startDate').html()
         });
 
-        var el = $('#' + appointment.get("startDate")),
-            view = new AppointmentView({model: appointment, el: el});
+        var view = new AppointmentView({model: appointment});
         view.render();
       }
     });
