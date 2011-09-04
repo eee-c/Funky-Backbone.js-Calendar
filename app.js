@@ -35,7 +35,7 @@ app.get('/', function(req, res){
   });
 });
 
-app.get('/events', function(req, res){
+app.get('/appointments', function(req, res){
   var options = {
     host: 'localhost',
     port: 5984,
@@ -52,7 +52,7 @@ app.get('/events', function(req, res){
 });
 
 
-app.get('/events/:id', function(req, res){
+app.get('/appointments/:id', function(req, res){
   var options = {
     host: 'localhost',
     port: 5984,
@@ -68,7 +68,7 @@ app.get('/events/:id', function(req, res){
   });
 });
 
-app.delete('/events/:id', function(req, res){
+app.delete('/appointments/:id', function(req, res){
   var options = {
     method: 'DELETE',
     host: 'localhost',
@@ -88,7 +88,7 @@ app.delete('/events/:id', function(req, res){
   couch_req.end();
 });
 
-app.post('/events', function(req, res){
+app.post('/appointments', function(req, res){
   var options = {
     method: 'POST',
     host: 'localhost',

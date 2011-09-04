@@ -59,7 +59,7 @@ table#calendar
     td.friday
     td.saturday
 
-#dialog(title="Add calendar event")
+#dialog(title="Add calendar appointment")
   h2.startDate
   p title
   p
@@ -127,8 +127,8 @@ script
 
 script
   $(function() {
-    window.Event = Backbone.Model.extend({
-      urlRoot : '/events',
+    window.Appointment = Backbone.Model.extend({
+      urlRoot : '/appointments',
       initialize: function(attributes) { this.id = attributes['_id']; },
       destroy: function() {
         Backbone.Model.prototype.destroy.call(this, {
@@ -137,18 +137,18 @@ script
       }
     });
 
-    window.EventList = Backbone.Collection.extend({
-      model: Event,
-      url: '/events',
+    window.AppointmentList = Backbone.Collection.extend({
+      model: Appointment,
+      url: '/appointments',
       parse: function(response) {
         return _(response.rows).map(function(row) { return row.doc ;});
       }
     });
 
-    window.Events = new EventList;
+    window.Appointments = new AppointmentList;
 
-    window.EventView = Backbone.View.extend({
-      template: _.template($('#calendar-event-template').html()),
+    window.AppointmentView = Backbone.View.extend({
+      template: _.template($('#calendar-appointment-template').html()),
       initialize: function(options) {
         options.model.bind('destroy', this.remove, this);
       },
@@ -163,14 +163,14 @@ script
         this.model.destroy();
       },
       remove: function() {
-        $(this.el).find('.event').remove();
+        $(this.el).find('.appointment').remove();
       }
     });
 
-    Events.fetch({success: function(collection, response) {
-        collection.each(function(event) {
-          var el = $('#' + event.get("startDate")),
-              view = new EventView({model: event, el: el});
+    Appointments.fetch({success: function(collection, response) {
+        collection.each(function(appointment) {
+          var el = $('#' + appointment.get("startDate")),
+              view = new AppointmentView({model: appointment, el: el});
           view.render();
         });
       }
@@ -198,14 +198,14 @@ script
         'click .ok':  'create'
       },
       create: function() {
-        var event = Events.create({
+        var appointment = Appointments.create({
           title: this.el.find('input.title').val(),
           description: this.el.find('input.description').val(),
           startDate: this.el.find('.startDate').html()
         });
 
-        var el = $('#' + event.get("startDate")),
-            view = new EventView({model: event, el: el});
+        var el = $('#' + appointment.get("startDate")),
+            view = new AppointmentView({model: appointment, el: el});
         view.render();
       }
     });
@@ -213,8 +213,8 @@ script
     window.AppView = new AppView;
   });
 
-|<script type="text/template" id="calendar-event-template">
-|  <span class="event" title="<%= description %>">
+|<script type="text/template" id="calendar-appointment-template">
+|  <span class="appointment" title="<%= description %>">
 |      <%= title %>
 |      <span class="delete">X</span>
 |  </span>

@@ -36,13 +36,13 @@ tr td.other-month .day-of-month {
   color: #ccc;
 }
 
-.event {
+.appointment {
   display: block;
   padding-left: 10px;
   padding-top: 5px;
 }
 
-.event .delete {
+.appointment .delete {
   cursor: pointer;
   background-color: black;
   color: white;
