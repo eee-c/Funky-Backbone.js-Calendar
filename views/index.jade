@@ -132,8 +132,12 @@ script
       initialize: function(attributes) { this.id = attributes['_id']; },
       destroy: function() {
         Backbone.Model.prototype.destroy.call(this, {
-          headers: {'If-Match': this.get("_rev")}
+          headers: {'If-Match': this.get("rev")}
         });
+      },
+      get: function(attribute) {
+        return Backbone.Model.prototype.get.call(this, attribute) ||
+               Backbone.Model.prototype.get.call(this, "_" + attribute);
       }
     });
 
