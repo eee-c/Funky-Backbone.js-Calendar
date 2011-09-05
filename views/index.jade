@@ -152,6 +152,7 @@ script
       initialize: function(options) {
         this.container = $('#' + this.model.get('startDate'));
         options.model.bind('destroy', this.remove, this);
+        options.model.bind('error', this.deleteError, this);
       },
       render: function() {
         $(this.el).html(this.template(this.model.toJSON()));
@@ -170,6 +171,15 @@ script
         this.model.destroy();
 
         return false;
+      },
+      deleteError: function(model, error) {
+        // TODO: blame the user instead of the programmer...
+        if (error.status == 409) {
+          alert("This site does not understand CouchDB revisions.");
+        }
+        else {
+          alert("This site was made by an idiot.");
+        }
       },
       remove: function() {
         $(this.el).remove();

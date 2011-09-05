@@ -80,6 +80,8 @@ app.delete('/appointments/:id', function(req, res){
   var couch_req = http.request(options, function(couch_response) {
     console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
 
+    // TODO: apply this everywhere
+    res.statusCode = couch_response.statusCode;
     couch_response.pipe(res);
   }).on('error', function(e) {
     console.log("Got error: " + e.message);
