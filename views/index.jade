@@ -164,17 +164,29 @@ script
         return this;
       },
       events: {
-        'click': 'deleteClick'
+        'click': 'handleClick'
       },
-      deleteClick: function(e) {
+      handleClick: function(e) {
+        if ($(e.target).hasClass('delete'))
+          return this.handleDelete(e);
+
+        return this.handleEdit(e);
+      },
+      handleDelete: function(e) {
         console.log("deleteClick");
 
         e.stopPropagation();
-        e.stopImmediatePropagation();
-
         this.model.destroy();
+      },
+      handleEdit: function(e) {
+        console.log("editClick");
+        e.stopPropagation();
 
-        return false;
+
+        $('#dialog').dialog('open');
+        $('.startDate', '#dialog').html(this.model.get("startDate"));
+        $('.title', '#dialog').val(this.model.get("title"));
+        $('.description', '#dialog').val(this.model.get("description"));
       },
       deleteError: function(model, error) {
         // TODO: blame the user instead of the programmer...
