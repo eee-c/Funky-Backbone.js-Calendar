@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -111,6 +110,7 @@ app.post('/appointments', function(req, res){
   couch_req.end();
 });
 
-
-app.listen(3000);
-console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+if (app.settings.env != 'test') {
+  app.listen(3000);
+  console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+}
