@@ -11,6 +11,10 @@
 #   - dist/**/*.js
 #
 src_files:
+    - public/javascripts/jquery.min.js
+    - public/javascripts/jquery-ui.min.js
+    - public/javascripts/underscore.js
+    - public/javascripts/backbone.js
     - public/javascripts/**/*.js
 
 # stylesheets
