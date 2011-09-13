@@ -16,8 +16,8 @@ module.exports = {
     assert.response(app,
       { url: '/' },
       function(res) {
-        fs.mkdir('fixtures', 0775, function() {
-          fs.writeFile('fixtures/homepage.html', res.body);
+        fs.mkdir('spec/javascripts/fixtures', 0775, function() {
+          fs.writeFile('spec/javascripts/fixtures/homepage.html', res.body);
         });
       });
   }
