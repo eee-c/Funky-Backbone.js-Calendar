@@ -213,10 +213,7 @@ script
         console.log("editClick");
         e.stopPropagation();
 
-        var edit_view = new AppointmentEditView({
-          el: $('#edit-dialog').parent(),
-          model: this.model
-        });
+        var edit_view = new AppointmentEditView({model: this.model});
         edit_view.render();
       },
       deleteError: function(model, error) {
@@ -234,7 +231,7 @@ script
     });
 
     window.AppointmentEditView = Backbone.View.extend({
-      // el: $('#edit-dialog'),
+      el: $('#edit-dialog').parent(),
       render: function () {
         $('.ui-dialog-content', this.el).dialog('open');
 
