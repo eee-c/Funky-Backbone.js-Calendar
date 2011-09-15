@@ -35,6 +35,7 @@ describe("Home", function() {
 
   afterEach(function() {
     $('#add-dialog').dialog('close');
+    $('#edit-dialog').dialog('close');
   });
 
   describe("appointments", function() {
@@ -59,7 +60,7 @@ describe("Home", function() {
 
     it("adds a new appointment to the UI when saved", function() {
       $('#2011-09-14').click();
-      $('.ok').click();
+      $('.ok', '#add-dialog').click();
 
       var appointment = {
         "id": "42",
@@ -108,7 +109,7 @@ describe("Home", function() {
 
     it("can edit appointments through an edit dialog", function() {
       $('.appointment', '#2011-09-15').click();
-      $('.ok').click();
+      $('.ok', '#edit-dialog').click();
 
       server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
       server.respond();

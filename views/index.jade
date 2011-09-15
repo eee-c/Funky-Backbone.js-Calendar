@@ -83,6 +83,31 @@ script
     });
   });
 
+#edit-dialog(title="Edit calendar appointment")
+  h2.startDate
+  input.
+  p title
+  p
+    input.title(type="text", name="title")
+  p description
+  p
+    input.description(type="text", name="description")
+
+script
+  $(function() {
+    $('#edit-dialog').dialog({
+      autoOpen: false,
+      modal: true,
+      buttons: [
+        { text: "OK",
+          class: "ok",
+          click: function() { $(this).dialog("close"); } },
+        { text: "Cancel",
+          click: function() { $(this).dialog("close"); } }
+      ]
+    });
+  });
+
 script
   $(add_dates_to_calendar);
 
@@ -183,8 +208,7 @@ script
         console.log("editClick");
         e.stopPropagation();
 
-
-        $('#add-dialog').dialog('open');
+        $('#edit-dialog').dialog('open');
         $('.startDate', '#add-dialog').html(this.model.get("startDate"));
         $('.title', '#add-dialog').val(this.model.get("title"));
         $('.description', '#add-dialog').val(this.model.get("description"));
