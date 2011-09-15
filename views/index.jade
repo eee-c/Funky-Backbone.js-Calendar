@@ -155,6 +155,11 @@ script
     window.Appointment = Backbone.Model.extend({
       urlRoot : '/appointments',
       initialize: function(attributes) { this.id = attributes['_id']; },
+      save: function() {
+        Backbone.Model.prototype.save.call(this, {
+          headers: {'If-Match': this.get("rev")}
+        });
+      },
       destroy: function() {
         Backbone.Model.prototype.destroy.call(this, {
           headers: {'If-Match': this.get("rev")}
@@ -208,10 +213,11 @@ script
         console.log("editClick");
         e.stopPropagation();
 
-        $('#edit-dialog').dialog('open');
-        $('.startDate', '#add-dialog').html(this.model.get("startDate"));
-        $('.title', '#add-dialog').val(this.model.get("title"));
-        $('.description', '#add-dialog').val(this.model.get("description"));
+        var edit_view = new AppointmentEditView({
+          el: $('#edit-dialog').parent(),
+          model: this.model
+        });
+        edit_view.render();
       },
       deleteError: function(model, error) {
         // TODO: blame the user instead of the programmer...
@@ -224,6 +230,29 @@ script
       },
       remove: function() {
         $(this.el).remove();
+      }
+    });
+
+    window.AppointmentEditView = Backbone.View.extend({
+      // el: $('#edit-dialog'),
+      render: function () {
+        $('.ui-dialog-content', this.el).dialog('open');
+
+        $('.startDate', this.el).
+          html(this.model.get("startDate"));
+        $('.title', this.el).
+          val(this.model.get("title"));
+        $('.description', this.el).
+          val(this.model.get("description"));
+      },
+      events : {
+        'click .ok': 'update'
+      },
+      update: function() {
+        this.model.save({
+          title: $('.title').val(),
+          description: $('.description').val()
+        });
       }
     });
 
