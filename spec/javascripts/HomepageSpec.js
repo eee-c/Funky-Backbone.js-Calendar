@@ -37,44 +37,83 @@ describe("Home", function() {
     $('#dialog').dialog('close');
   });
 
-  it("populates the calendar with appointments", function() {
-    expect($('#2011-09-15')).toHaveText(/Get Funky/);
+  describe("appointments", function() {
+    it("populates the calendar with appointments", function() {
+      expect($('#2011-09-15')).toHaveText(/Get Funky/);
+    });
   });
 
-  it("binds \"X\" click events to remove records from the data store and UI", function() {
-    jasmine.Clock.useMock();
+  describe("adding an appointment", function() {
+    it("sends clicks on day to an add dialog", function() {
+      $('#2011-09-14').click();
 
-    $('.delete', '#2011-09-15').click();
+      var dialog = $('#dialog').parent();
+      expect(dialog).toBeVisible();
+      expect(dialog).toHaveText(/Add/);
+    });
 
-    server.respondWith('DELETE', '/appointments/42', '{"id":"42"}');
-    server.respond();
+    it("displays the date clicked in the add dialog", function() {
+      $('#2011-09-14').click();
+      expect($('#dialog')).toHaveText(/2011-09-14/);
+    });
 
-    jasmine.Clock.tick(5000);
-    expect($('#2011-09-15')).not.toHaveText(/Funky/);
+    it("adds a new appointment to the UI when saved", function() {
+      $('#2011-09-14').click();
+      $('.ok').click();
+
+      var appointment = {
+        "id": "42",
+        "rev": "1-2345",
+        "startDate": "2011-09-14",
+        "title": "Groovy meeting",
+        "description": "asdf"
+      };
+
+      server.respondWith('POST', '/appointments', JSON.stringify(appointment));
+      server.respond();
+
+      expect($('#2011-09-14')).toHaveText(/Groovy/);
+    });
   });
 
-  it("binds click events on the appointment to an edit dialog", function() {
-    $('.appointment', '#2011-09-15').click();
-    expect($('#dialog')).toBeVisible();
+  describe("deleting an appointment", function() {
+    it("clicking the \"X\" removes records from the data store and UI", function() {
+      jasmine.Clock.useMock();
+
+      $('.delete', '#2011-09-15').click();
+
+      server.respondWith('DELETE', '/appointments/42', '{"id":"42"}');
+      server.respond();
+
+      jasmine.Clock.tick(5000);
+      expect($('#2011-09-15')).not.toHaveText(/Funky/);
+    });
   });
 
-  it("displays model updates", function () {
-    var appointment = Appointments.at(0);
-    appointment.save({title: "Changed"});
+  describe("updating an appointment", function (){
+    it("binds click events on the appointment to an edit dialog", function() {
+      $('.appointment', '#2011-09-15').click();
+      expect($('#dialog')).toBeVisible();
+    });
 
-    server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
-    server.respond();
+    it("displays model updates", function () {
+      var appointment = Appointments.at(0);
+      appointment.save({title: "Changed"});
 
-    expect($('#2011-09-15')).toHaveText(/Changed/);
-  });
+      server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
+      server.respond();
 
-  it("can edit appointments through an edit dialog", function() {
-    $('.appointment', '#2011-09-15').click();
-    $('.ok').click();
+      expect($('#2011-09-15')).toHaveText(/Changed/);
+    });
 
-    server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
-    server.respond();
+    it("can edit appointments through an edit dialog", function() {
+      $('.appointment', '#2011-09-15').click();
+      $('.ok').click();
 
-    expect($('#2011-09-15')).toHaveText(/Changed/);
+      server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
+      server.respond();
+
+      expect($('#2011-09-15')).toHaveText(/Changed/);
+    });
   });
 });
