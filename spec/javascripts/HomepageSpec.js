@@ -34,7 +34,7 @@ describe("Home", function() {
   });
 
   afterEach(function() {
-    $('#dialog').dialog('close');
+    $('#add-dialog').dialog('close');
   });
 
   describe("appointments", function() {
@@ -47,14 +47,14 @@ describe("Home", function() {
     it("sends clicks on day to an add dialog", function() {
       $('#2011-09-14').click();
 
-      var dialog = $('#dialog').parent();
+      var dialog = $('#add-dialog').parent();
       expect(dialog).toBeVisible();
       expect(dialog).toHaveText(/Add/);
     });
 
     it("displays the date clicked in the add dialog", function() {
       $('#2011-09-14').click();
-      expect($('#dialog')).toHaveText(/2011-09-14/);
+      expect($('#add-dialog')).toHaveText(/2011-09-14/);
     });
 
     it("adds a new appointment to the UI when saved", function() {
@@ -93,7 +93,7 @@ describe("Home", function() {
   describe("updating an appointment", function (){
     it("binds click events on the appointment to an edit dialog", function() {
       $('.appointment', '#2011-09-15').click();
-      expect($('#dialog')).toBeVisible();
+      expect($('#edit-dialog')).toBeVisible();
     });
 
     it("displays model updates", function () {

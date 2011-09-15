@@ -59,7 +59,7 @@ table#calendar
     td.friday
     td.saturday
 
-#dialog(title="Add calendar appointment")
+#add-dialog(title="Add calendar appointment")
   h2.startDate
   p title
   p
@@ -70,7 +70,7 @@ table#calendar
 
 script
   $(function() {
-    $('#dialog').dialog({
+    $('#add-dialog').dialog({
       autoOpen: false,
       modal: true,
       buttons: [
@@ -184,10 +184,10 @@ script
         e.stopPropagation();
 
 
-        $('#dialog').dialog('open');
-        $('.startDate', '#dialog').html(this.model.get("startDate"));
-        $('.title', '#dialog').val(this.model.get("title"));
-        $('.description', '#dialog').val(this.model.get("description"));
+        $('#add-dialog').dialog('open');
+        $('.startDate', '#add-dialog').html(this.model.get("startDate"));
+        $('.title', '#add-dialog').val(this.model.get("title"));
+        $('.description', '#add-dialog').val(this.model.get("description"));
       },
       deleteError: function(model, error) {
         // TODO: blame the user instead of the programmer...
@@ -218,7 +218,7 @@ script
       addClick: function(e) {
         console.log("addClick");
 
-        $('#dialog').
+        $('#add-dialog').
           dialog('open').
           find('.startDate').
           html(this.el.id);
@@ -230,7 +230,7 @@ script
     });
 
     window.AppView = Backbone.View.extend({
-      el: $("#dialog").parent(),
+      el: $("#add-dialog").parent(),
       events: {
         'click .ok':  'create'
       },
