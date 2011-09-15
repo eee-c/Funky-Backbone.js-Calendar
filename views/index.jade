@@ -157,6 +157,7 @@ script
         this.container = $('#' + this.model.get('startDate'));
         options.model.bind('destroy', this.remove, this);
         options.model.bind('error', this.deleteError, this);
+        options.model.bind('change', this.render, this);
       },
       render: function() {
         $(this.el).html(this.template(this.model.toJSON()));

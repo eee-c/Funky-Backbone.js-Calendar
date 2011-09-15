@@ -23,13 +23,18 @@ describe("Home", function() {
     loadFixtures('homepage.html');
 
     // populate appointments for this month
-    server.respondWith('GET', '/appointments', JSON.stringify(doc_list));
+    server.respondWith('GET', '/appointments',
+      [200, { "Content-Type": "application/json" }, JSON.stringify(doc_list)]);
     server.respond();
   });
 
   afterEach(function() {
     // allow normal XHR requests to work again
     server.restore();
+  });
+
+  afterEach(function() {
+    $('#dialog').dialog('close');
   });
 
   it("populates the calendar with appointments", function() {
@@ -46,5 +51,30 @@ describe("Home", function() {
 
     jasmine.Clock.tick(5000);
     expect($('#2011-09-15')).not.toHaveText(/Funky/);
+  });
+
+  it("binds click events on the appointment to an edit dialog", function() {
+    $('.appointment', '#2011-09-15').click();
+    expect($('#dialog')).toBeVisible();
+  });
+
+  it("displays model updates", function () {
+    var appointment = Appointments.at(0);
+    appointment.save({title: "Changed"});
+
+    server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
+    server.respond();
+
+    expect($('#2011-09-15')).toHaveText(/Changed/);
+  });
+
+  it("can edit appointments through an edit dialog", function() {
+    $('.appointment', '#2011-09-15').click();
+    $('.ok').click();
+
+    server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
+    server.respond();
+
+    expect($('#2011-09-15')).toHaveText(/Changed/);
   });
 });
