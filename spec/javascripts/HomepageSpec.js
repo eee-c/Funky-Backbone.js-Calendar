@@ -60,7 +60,7 @@ describe("Home", function() {
 
     it("adds a new appointment to the UI when saved", function() {
       $('#2011-09-14').click();
-      $('.ok', '#add-dialog').click();
+      $('.ok:visible').click();
 
       var appointment = {
         "id": "42",
@@ -109,7 +109,7 @@ describe("Home", function() {
 
     it("can edit appointments through an edit dialog", function() {
       $('.appointment', '#2011-09-15').click();
-      $('.ok', '#edit-dialog').click();
+      $('.ok:visible').click();
 
       server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
       server.respond();
