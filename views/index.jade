@@ -180,6 +180,11 @@ script
     });
 
     window.Appointments = new AppointmentList;
+    Appointments.bind('add', function(appointment) {
+      var view = new AppointmentView({model: appointment});
+      view.render();
+    });
+
 
     window.AppointmentView = Backbone.View.extend({
       template: _.template($('#calendar-appointment-template').html()),
@@ -253,6 +258,38 @@ script
       }
     });
 
+    window.AppointmentAddView = Backbone.View.extend({
+      el: $("#add-dialog").parent(),
+      initialize: function(options) {
+        this.startDate = options.startDate;
+      },
+      render: function () {
+        $('.ui-dialog-content', this.el).dialog('open');
+
+        $('.startDate', this.el).html(this.startDate);
+        $('.title', this.el).val("");
+        $('.description', this.el).val("");
+      },
+      events: {
+        'click .ok':  'create'
+      },
+      create: function() {
+        console.log(Appointments);
+        var appointment = Appointments.create({
+          title: this.el.find('input.title').val(),
+          description: this.el.find('input.description').val(),
+          startDate: this.el.find('.startDate').html()
+        }, {
+          success: function() {console.log("creating: success")},
+          error: function() {console.log("fail")}
+        });
+
+        // TODO: convert to event listener....
+        var view = new AppointmentView({model: appointment});
+        view.render();
+      }
+    });
+
     Appointments.fetch({success: function(collection, response) {
         collection.each(function(appointment) {
           var view = new AppointmentView({model: appointment});
@@ -268,35 +305,17 @@ script
       addClick: function(e) {
         console.log("addClick");
 
-        $('#add-dialog').
-          dialog('open').
-          find('.startDate').
-          html(this.el.id);
+        var add_view = new AppointmentAddView({
+          model: this.model,
+          startDate: this.el.id
+        });
+        add_view.render();
       }
     });
 
     $('#calendar td').each(function() {
       new DayView({el: this});
     });
-
-    window.AppView = Backbone.View.extend({
-      el: $("#add-dialog").parent(),
-      events: {
-        'click .ok':  'create'
-      },
-      create: function() {
-        var appointment = Appointments.create({
-          title: this.el.find('input.title').val(),
-          description: this.el.find('input.description').val(),
-          startDate: this.el.find('.startDate').html()
-        });
-
-        var view = new AppointmentView({model: appointment});
-        view.render();
-      }
-    });
-
-    window.AppView = new AppView;
   });
 
 |<script type="text/template" id="calendar-appointment-template">
