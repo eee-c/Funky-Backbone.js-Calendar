@@ -155,10 +155,10 @@ script
     window.Appointment = Backbone.Model.extend({
       urlRoot : '/appointments',
       initialize: function(attributes) { this.id = attributes['_id']; },
-      save: function() {
-        Backbone.Model.prototype.save.call(this, {
-          headers: {'If-Match': this.get("rev")}
-        });
+      save: function(attributes, options) {
+        attributes || (attributes = {});
+        attributes['headers'] = {'If-Match': this.get("rev")};
+        Backbone.Model.prototype.save.call(this, attributes, options);
       },
       destroy: function() {
         Backbone.Model.prototype.destroy.call(this, {
@@ -180,11 +180,20 @@ script
     });
 
     window.Appointments = new AppointmentList;
+
     Appointments.bind('add', function(appointment) {
       var view = new AppointmentView({model: appointment});
       view.render();
     });
 
+    Appointments.bind('reset', function(appointments) {
+      appointments.each(function(appointment) {
+        var view = new AppointmentView({model: appointment});
+        view.render();
+      });
+    });
+
+    Appointments.fetch();
 
     window.AppointmentView = Backbone.View.extend({
       template: _.template($('#calendar-appointment-template').html()),
@@ -274,26 +283,10 @@ script
         'click .ok':  'create'
       },
       create: function() {
-        console.log(Appointments);
-        var appointment = Appointments.create({
+        Appointments.create({
           title: this.el.find('input.title').val(),
           description: this.el.find('input.description').val(),
           startDate: this.el.find('.startDate').html()
-        }, {
-          success: function() {console.log("creating: success")},
-          error: function() {console.log("fail")}
-        });
-
-        // TODO: convert to event listener....
-        var view = new AppointmentView({model: appointment});
-        view.render();
-      }
-    });
-
-    Appointments.fetch({success: function(collection, response) {
-        collection.each(function(appointment) {
-          var view = new AppointmentView({model: appointment});
-          view.render();
         });
       }
     });
