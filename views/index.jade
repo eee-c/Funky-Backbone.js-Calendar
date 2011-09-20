@@ -181,17 +181,17 @@ script
 
     window.Appointments = new AppointmentList;
 
-    Appointments.bind('add', function(appointment) {
+    Appointments.bind('add', render_appointment);
+    Appointments.bind('reset', render_appointment_list);
+
+    function render_appointment(appointment) {
       var view = new AppointmentView({model: appointment});
       view.render();
-    });
+    }
 
-    Appointments.bind('reset', function(appointments) {
-      appointments.each(function(appointment) {
-        var view = new AppointmentView({model: appointment});
-        view.render();
-      });
-    });
+    function render_appointment_list(list) {
+      list.each(render_appointment);
+    }
 
     Appointments.fetch();
 
