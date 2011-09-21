@@ -152,169 +152,197 @@ script
 
 script
   $(function() {
-    window.Appointment = Backbone.Model.extend({
-      urlRoot : '/appointments',
-      initialize: function(attributes) { this.id = attributes['_id']; },
-      save: function(attributes, options) {
-        attributes || (attributes = {});
-        attributes['headers'] = {'If-Match': this.get("rev")};
-        Backbone.Model.prototype.save.call(this, attributes, options);
-      },
-      destroy: function() {
-        Backbone.Model.prototype.destroy.call(this, {
-          headers: {'If-Match': this.get("rev")}
-        });
-      },
-      get: function(attribute) {
-        return Backbone.Model.prototype.get.call(this, attribute) ||
-               Backbone.Model.prototype.get.call(this, "_" + attribute);
-      }
-    });
+    var Cal = {};
 
-    window.AppointmentList = Backbone.Collection.extend({
-      model: Appointment,
-      url: '/appointments',
-      parse: function(response) {
-        return _(response.rows).map(function(row) { return row.doc ;});
-      }
-    });
-
-    window.Appointments = new AppointmentList;
-
-    window.AppointmentView = Backbone.View.extend({
-      template: _.template($('#calendar-appointment-template').html()),
-      initialize: function(options) {
-        this.container = $('#' + this.model.get('startDate'));
-        options.model.bind('destroy', this.remove, this);
-        options.model.bind('error', this.deleteError, this);
-        options.model.bind('change', this.render, this);
-      },
-      render: function() {
-        $(this.el).html(this.template(this.model.toJSON()));
-        this.container.append($(this.el));
-        return this;
-      },
-      events: {
-        'click': 'handleClick'
-      },
-      handleClick: function(e) {
-        if ($(e.target).hasClass('delete'))
-          return this.handleDelete(e);
-
-        return this.handleEdit(e);
-      },
-      handleDelete: function(e) {
-        console.log("deleteClick");
-
-        e.stopPropagation();
-        this.model.destroy();
-      },
-      handleEdit: function(e) {
-        console.log("editClick");
-        e.stopPropagation();
-
-        var edit_view = new AppointmentEditView({model: this.model});
-        edit_view.render();
-      },
-      deleteError: function(model, error) {
-        // TODO: blame the user instead of the programmer...
-        if (error.status == 409) {
-          alert("This site does not understand CouchDB revisions.");
+    Cal.Models = (function() {
+      var Appointment = Backbone.Model.extend({
+        urlRoot : '/appointments',
+        initialize: function(attributes) { this.id = attributes['_id']; },
+        save: function(attributes, options) {
+          attributes || (attributes = {});
+          attributes['headers'] = {'If-Match': this.get("rev")};
+          Backbone.Model.prototype.save.call(this, attributes, options);
+        },
+        destroy: function() {
+          Backbone.Model.prototype.destroy.call(this, {
+            headers: {'If-Match': this.get("rev")}
+          });
+        },
+        get: function(attribute) {
+          return Backbone.Model.prototype.get.call(this, attribute) ||
+                 Backbone.Model.prototype.get.call(this, "_" + attribute);
         }
-        else {
-          alert("This site was made by an idiot.");
+      });
+
+      return {Appointment: Appointment};
+    })();
+
+    Cal.Collections = (function() {
+      var Appointments = Backbone.Collection.extend({
+        model: Cal.Models.Appointment,
+        url: '/appointments',
+        parse: function(response) {
+          return _(response.rows).map(function(row) { return row.doc ;});
         }
-      },
-      remove: function() {
-        $(this.el).remove();
-      }
-    });
+      });
 
-    window.AppointmentEditView = Backbone.View.extend({
-      el: $('#edit-dialog').parent(),
-      render: function () {
-        $('.ui-dialog-content', this.el).dialog('open');
+      return {Appointments: Appointments};
+    })();
 
-        $('.startDate', this.el).
-          html(this.model.get("startDate"));
-        $('.title', this.el).
-          val(this.model.get("title"));
-        $('.description', this.el).
-          val(this.model.get("description"));
-      },
-      events : {
-        'click .ok': 'update'
-      },
-      update: function() {
-        this.model.save({
-          title: $('.title').val(),
-          description: $('.description').val()
-        });
-      }
-    });
+    Cal.Views = (function() {
+      var appointment_collection;
 
-    window.AppointmentAddView = Backbone.View.extend({
-      el: $("#add-dialog").parent(),
-      initialize: function(options) {
-        this.startDate = options.startDate;
-      },
-      render: function () {
-        $('.ui-dialog-content', this.el).dialog('open');
+      var Appointment = Backbone.View.extend({
+        template: _.template($('#calendar-appointment-template').html()),
+        initialize: function(options) {
+          this.container = $('#' + this.model.get('startDate'));
+          options.model.bind('destroy', this.remove, this);
+          options.model.bind('error', this.deleteError, this);
+          options.model.bind('change', this.render, this);
+        },
+        render: function() {
+          $(this.el).html(this.template(this.model.toJSON()));
+          this.container.append($(this.el));
+          return this;
+        },
+        events: {
+          'click': 'handleClick'
+        },
+        handleClick: function(e) {
+          if ($(e.target).hasClass('delete'))
+            return this.handleDelete(e);
 
-        $('.startDate', this.el).html(this.startDate);
-        $('.title', this.el).val("");
-        $('.description', this.el).val("");
-      },
-      events: {
-        'click .ok':  'create'
-      },
-      create: function() {
-        Appointments.create({
-          title: this.el.find('input.title').val(),
-          description: this.el.find('input.description').val(),
-          startDate: this.el.find('.startDate').html()
-        });
-      }
-    });
+          return this.handleEdit(e);
+        },
+        handleDelete: function(e) {
+          console.log("deleteClick");
 
-    window.DayView = Backbone.View.extend({
-      events : {
-        'click': 'addClick'
-      },
-      addClick: function(e) {
-        console.log("addClick");
+          e.stopPropagation();
+          this.model.destroy();
+        },
+        handleEdit: function(e) {
+          console.log("editClick");
+          e.stopPropagation();
 
-        var add_view = new AppointmentAddView({
-          model: this.model,
-          startDate: this.el.id
-        });
-        add_view.render();
-      }
-    });
+          var edit_view = new AppointmentEdit({model: this.model});
+          edit_view.render();
+        },
+        deleteError: function(model, error) {
+          // TODO: blame the user instead of the programmer...
+          if (error.status == 409) {
+            alert("This site does not understand CouchDB revisions.");
+          }
+          else {
+            alert("This site was made by an idiot.");
+          }
+        },
+        remove: function() {
+          $(this.el).remove();
+        }
+      });
 
-    window.AppView = Backbone.View.extend({
-      initialize: function(options) {
-        Appointments.bind('add', _.bind(this.render_appointment, this));
-        Appointments.bind('reset', _.bind(this.render_appointment_list, this));
+      var AppointmentEdit = Backbone.View.extend({
+        el: $('#edit-dialog').parent(),
+        render: function () {
+          $('.ui-dialog-content', this.el).dialog('open');
 
-        Appointments.fetch();
+          $('.startDate', this.el).
+            html(this.model.get("startDate"));
+          $('.title', this.el).
+            val(this.model.get("title"));
+          $('.description', this.el).
+            val(this.model.get("description"));
+        },
+        events : {
+          'click .ok': 'update'
+        },
+        update: function() {
+          this.model.save({
+            title: $('.title').val(),
+            description: $('.description').val()
+          });
+        }
+      });
 
-        $('#calendar td').each(function() {
-          new DayView({el: this});
-        });
-      },
+      var AppointmentAdd = Backbone.View.extend({
+        el: $("#add-dialog").parent(),
+        initialize: function(options) {
+          this.startDate = options.startDate;
+        },
+        render: function () {
+          $('.ui-dialog-content', this.el).dialog('open');
 
-      render_appointment: function(appointment) {
-        var view = new AppointmentView({model: appointment});
-        view.render();
-      },
+          $('.startDate', this.el).html(this.startDate);
+          $('.title', this.el).val("");
+          $('.description', this.el).val("");
+        },
+        events: {
+          'click .ok':  'create'
+        },
+        create: function() {
+          appointment_collection.create({
+            title: this.el.find('input.title').val(),
+            description: this.el.find('input.description').val(),
+            startDate: this.el.find('.startDate').html()
+          });
+        }
+      });
 
-      render_appointment_list: function(list) {
-        list.each(this.render_appointment);
-      }
-    });
+      var Day = Backbone.View.extend({
+        events : {
+          'click': 'addClick'
+        },
+        addClick: function(e) {
+          console.log("addClick");
 
-    new AppView();
+          var add_view = new AppointmentAdd({
+            model: this.model,
+            startDate: this.el.id
+          });
+          add_view.render();
+        }
+      });
+
+      var Application = Backbone.View.extend({
+        initialize: function(options) {
+          this.collection = appointment_collection = options.collection;
+
+          this.initialize_appointment_views();
+          this.initialize_day_views();
+        },
+        initialize_appointment_views: function() {
+          this.collection.
+            bind('add', _.bind(this.render_appointment, this));
+          this.collection.
+            bind('reset', _.bind(this.render_appointment_list, this));
+        },
+        initialize_day_views: function() {
+          $('#calendar td').each(function() {
+            new Day({el: this});
+          });
+        },
+        render_appointment: function(appointment) {
+          var view = new Appointment({model: appointment});
+          view.render();
+        },
+        render_appointment_list: function(list) {
+          list.each(this.render_appointment);
+        }
+      });
+
+      return {
+        Appointment: Appointment,
+        AppointmentEdit: AppointmentEdit,
+        AppointmentAdd: AppointmentAdd,
+        Day: Day,
+        Application: Application
+      };
+    })();
+
+    window.appointments = new Cal.Collections.Appointments;
+    new Cal.Views.Application({collection: appointments});
+
+    appointments.fetch();
   });
 
 |<script type="text/template" id="calendar-appointment-template">
