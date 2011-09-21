@@ -330,17 +330,11 @@ script
         }
       });
 
-      return {
-        Appointment: Appointment,
-        AppointmentEdit: AppointmentEdit,
-        AppointmentAdd: AppointmentAdd,
-        Day: Day,
-        Application: Application
-      };
+      return { Application: Application };
     })();
 
-    window.appointments = new Cal.Collections.Appointments;
-    new Cal.Views.Application({collection: appointments});
+    var appointments = window.appointments = new Cal.Collections.Appointments,
+        app = new Cal.Views.Application({collection: appointments});
 
     appointments.fetch();
   });
