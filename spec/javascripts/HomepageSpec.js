@@ -98,7 +98,7 @@ describe("Home", function() {
     });
 
     it("displays model updates", function () {
-      var appointment = appointments.at(0);
+      var appointment = calendar.appointments.at(0);
       appointment.save({title: "Changed"});
 
       server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
