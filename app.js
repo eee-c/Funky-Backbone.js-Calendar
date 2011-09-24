@@ -3,7 +3,8 @@
  */
 
 var express = require('express-unstable'),
-    http = require('http');
+    http = require('http'),
+    faye = require('faye');
 
 var app = module.exports = express.createServer();
 
@@ -131,6 +132,9 @@ app.post('/appointments', function(req, res){
   couch_req.write(JSON.stringify(req.body));
   couch_req.end();
 });
+
+var bayeux = new faye.NodeAdapter({mount: '/faye', timeout: 45});
+bayeux.attach(app);
 
 if (app.settings.env != 'test') {
   app.listen(3000);

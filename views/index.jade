@@ -68,6 +68,16 @@ table#calendar
   p
     input.description(type="text", name="description")
 
+
+script
+  $(function() {
+    var client = new Faye.Client('/faye')
+    client.subscribe('/calendars/public', function(message) {
+      console.log('[/calendars/public]');
+      console.log(message);
+    });
+  });
+
 script
   $(function() {
     $('#add-dialog').dialog({
@@ -155,7 +165,10 @@ script
       var Models = (function() {
         var Appointment = Backbone.Model.extend({
           urlRoot : '/appointments',
-          initialize: function(attributes) { this.id = attributes['_id']; },
+          initialize: function(attributes) {
+            this.id = attributes['_id'];
+            this.faye = new Faye.Client('/faye');
+          },
           save: function(attributes, options) {
             options || (options = {});
             options['headers'] = {'If-Match': this.get("rev")};
@@ -169,6 +182,12 @@ script
           get: function(attribute) {
             return Backbone.Model.prototype.get.call(this, attribute) ||
                    Backbone.Model.prototype.get.call(this, "_" + attribute);
+          },
+          sync: function(method, model, options) {
+            if (method == "create") {
+              this.faye.publish("/calendars/public", model);
+            }
+            Backbone.sync.call(this, method, this, options);
           }
         });
 
