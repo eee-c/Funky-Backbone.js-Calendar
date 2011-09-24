@@ -92,6 +92,16 @@ describe("Home", function() {
   });
 
   describe("updating an appointment", function (){
+    it("sets CouchDB revision headers", function() {
+      var spy = spyOn(Backbone.Model.prototype, 'save').andCallThrough();
+      var appointment = calendar.appointments.at(0);
+
+      appointment.save({title: "Changed"});
+
+      expect(spy.mostRecentCall.args[1].headers)
+        .toEqual({ 'If-Match': '1-2345' });
+    });
+
     it("binds click events on the appointment to an edit dialog", function() {
       $('.appointment', '#2011-09-15').click();
       expect($('#edit-dialog')).toBeVisible();

@@ -85,7 +85,6 @@ script
 
 #edit-dialog(title="Edit calendar appointment")
   h2.startDate
-  input.
   p title
   p
     input.title(type="text", name="title")
@@ -158,8 +157,8 @@ script
           urlRoot : '/appointments',
           initialize: function(attributes) { this.id = attributes['_id']; },
           save: function(attributes, options) {
-            attributes || (attributes = {});
-            attributes['headers'] = {'If-Match': this.get("rev")};
+            options || (options = {});
+            options['headers'] = {'If-Match': this.get("rev")};
             Backbone.Model.prototype.save.call(this, attributes, options);
           },
           destroy: function() {
@@ -255,8 +254,8 @@ script
           },
           update: function() {
             this.model.save({
-              title: $('.title').val(),
-              description: $('.description').val()
+              title: $('.title', '#edit-dialog').val(),
+              description: $('.description', '#edit-dialog').val()
             });
           }
         });

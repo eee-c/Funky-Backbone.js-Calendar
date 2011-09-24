@@ -89,6 +89,28 @@ app.delete('/appointments/:id', function(req, res){
   couch_req.end();
 });
 
+app.put('/appointments/:id', function(req, res){
+  var options = {
+    method: 'PUT',
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/' + req.params.id,
+    headers: req.headers
+  };
+
+  var couch_req = http.request(options, function(couch_response) {
+    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+
+    res.statusCode = couch_response.statusCode;
+    couch_response.pipe(res);
+  }).on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+
+  couch_req.write(JSON.stringify(req.body));
+  couch_req.end();
+});
+
 app.post('/appointments', function(req, res){
   var options = {
     method: 'POST',
