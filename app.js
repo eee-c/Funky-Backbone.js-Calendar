@@ -133,8 +133,39 @@ app.post('/appointments', function(req, res){
   couch_req.end();
 });
 
+// Faye server
 var bayeux = new faye.NodeAdapter({mount: '/faye', timeout: 45});
 bayeux.attach(app);
+
+// Faye clients
+var client = bayeux.getClient();
+
+client.subscribe('/calendars/read', function() {
+  //  CouchDB connection options
+  var options = {
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/_all_docs?include_docs=true'
+  };
+
+  // Send a GET request to CouchDB
+  var req = http.get(options, function(couch_response) {
+    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+
+    // Accumulate the response and publish when done
+    var data = '';
+    couch_response.on('data', function(chunk) { data += chunk; });
+    couch_response.on('end', function() {
+      var all_docs = JSON.parse(data);
+      client.publish('/calendars/reset', all_docs);
+    });
+  });
+
+  // If anything goes wrong, log it (TODO: publish to the /errors ?)
+  req.on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+});
 
 if (app.settings.env != 'test') {
   app.listen(3000);

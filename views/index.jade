@@ -68,16 +68,6 @@ table#calendar
   p
     input.description(type="text", name="description")
 
-
-script
-  $(function() {
-    var client = new Faye.Client('/faye')
-    client.subscribe('/calendars/public', function(message) {
-      console.log('[/calendars/public]');
-      console.log(message);
-    });
-  });
-
 script
   $(function() {
     $('#add-dialog').dialog({
@@ -161,13 +151,24 @@ script
 
 script
   $(function() {
+    var faye = new Faye.Client('/faye');
+    Backbone.sync = function(method, model, options) {
+      faye.publish("/calendars/" + method, model);
+    }
+
+    _(['create', 'update', 'delete', 'read', 'changes']).each(function(method) {
+      faye.subscribe('/calendars/' + method, function(message) {
+        console.log('[/calendars/' + method + ']');
+        console.log(message);
+      });
+    });
+
     var Cal = function() {
       var Models = (function() {
         var Appointment = Backbone.Model.extend({
           urlRoot : '/appointments',
           initialize: function(attributes) {
             this.id = attributes['_id'];
-            this.faye = new Faye.Client('/faye');
           },
           save: function(attributes, options) {
             options || (options = {});
@@ -182,12 +183,6 @@ script
           get: function(attribute) {
             return Backbone.Model.prototype.get.call(this, attribute) ||
                    Backbone.Model.prototype.get.call(this, "_" + attribute);
-          },
-          sync: function(method, model, options) {
-            if (method == "create") {
-              this.faye.publish("/calendars/public", model);
-            }
-            Backbone.sync.call(this, method, this, options);
           }
         });
 
@@ -197,7 +192,6 @@ script
       var Collections = (function() {
         var Appointments = Backbone.Collection.extend({
           model: Models.Appointment,
-          url: '/appointments',
           parse: function(response) {
             return _(response.rows).map(function(row) { return row.doc ;});
           }
@@ -364,6 +358,16 @@ script
 
 
     window.calendar = new Cal();
+
+    faye.subscribe('/calendars/reset', function(message) {
+      console.log('[/calendars/reset]');
+      console.log(message);
+
+      var all_docs = calendar.appointments.parse(message)
+      calendar.appointments.reset(all_docs);
+    });
+
+
   });
 
 |<script type="text/template" id="calendar-appointment-template">
