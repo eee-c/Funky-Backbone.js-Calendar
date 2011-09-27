@@ -260,10 +260,11 @@ script
           }
         });
 
-        var AppointmentAdd = Backbone.View.extend({
+        var AppointmentAdd = new (Backbone.View.extend({
           el: $("#add-dialog").parent(),
-          initialize: function(options) {
+          reset: function(options) {
             this.startDate = options.startDate;
+            this.render();
           },
           render: function () {
             $('.ui-dialog-content', this.el).dialog('open');
@@ -282,7 +283,7 @@ script
               startDate: this.el.find('.startDate').html()
             });
           }
-        });
+        }));
 
         var Day = Backbone.View.extend({
           events : {
@@ -291,11 +292,7 @@ script
           addClick: function(e) {
             console.log("addClick");
 
-            var add_view = new AppointmentAdd({
-              model: this.model,
-              startDate: this.el.id
-            });
-            add_view.render();
+            AppointmentAdd.reset({startDate: this.el.id});
           }
         });
 
