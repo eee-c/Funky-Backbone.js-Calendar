@@ -167,6 +167,38 @@ client.subscribe('/calendars/read', function() {
   });
 });
 
+client.subscribe('/calendars/create', function(message) {
+  // HTTP request options
+  var options = {
+    method: 'POST',
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar',
+    headers: {'content-type': 'application/json'}
+  };
+
+  // The request object
+  var req = http.request(options, function(response) {
+    console.log("Got response: %s %s:%d%s", response.statusCode, options.host, options.port, options.path);
+
+    // Accumulate the response and publish when done
+    var data = '';
+    response.on('data', function(chunk) { data += chunk; });
+    response.on('end', function() {
+      client.publish('/calendars/add', JSON.parse(data));
+    });
+  });
+
+  // Rudimentary connection error handling
+  req.on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+
+  // Write the POST body and send the request
+  req.write(JSON.stringify(message));
+  req.end();
+});
+
 if (app.settings.env != 'test') {
   app.listen(3000);
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

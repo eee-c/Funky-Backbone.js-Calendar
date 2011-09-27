@@ -368,6 +368,11 @@ script
     });
 
 
+    faye.subscribe('/calendars/add', function(message) {
+      console.log('[/calendars/add]');
+      console.log(message);
+    });
+
   });
 
 |<script type="text/template" id="calendar-appointment-template">
