@@ -288,6 +288,10 @@ script
           events: {
             'click .ok':  'create'
           },
+          delegateEvents: function(events) {
+            this.cid = 'add-dialog';
+            Backbone.View.prototype.delegateEvents.call(this, events);
+          },
           create: function() {
             appointment_collection.create({
               title: this.el.find('input.title').val(),
