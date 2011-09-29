@@ -368,6 +368,8 @@ script
     faye.subscribe('/calendars/add', function(message) {
       console.log('[/calendars/add]');
       console.log(message);
+
+      calendar.appointments.add(message);
     });
 
   });

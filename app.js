@@ -185,7 +185,19 @@ client.subscribe('/calendars/create', function(message) {
     var data = '';
     response.on('data', function(chunk) { data += chunk; });
     response.on('end', function() {
-      client.publish('/calendars/add', JSON.parse(data));
+      var couch_response = JSON.parse(data),
+          model = {
+            id: couch_response.id,
+            rev: couch_response.rev,
+            title: message.title,
+            description: message.description,
+            startDate: message.startDate
+          };
+
+      console.log(couch_response)
+      console.log(model)
+
+      client.publish('/calendars/add', model);
     });
   });
 
