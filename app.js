@@ -211,6 +211,87 @@ client.subscribe('/calendars/create', function(message) {
   req.end();
 });
 
+
+
+client.subscribe('/calendars/delete', function(message) {
+  // HTTP request options
+  var options = {
+    method: 'DELETE',
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/' + message._id,
+    headers: {
+      'content-type': 'application/json',
+      'if-match': message._rev
+    }
+  };
+
+  // The request object
+  var req = http.request(options, function(response) {
+    console.log("Got response: %s %s:%d%s", response.statusCode, options.host, options.port, options.path);
+
+    // Accumulate the response and publish when done
+    var data = '';
+    response.on('data', function(chunk) { data += chunk; });
+    response.on('end', function() {
+      var couch_response = JSON.parse(data);
+
+      console.log(couch_response)
+
+      client.publish('/calendars/remove', couch_response);
+    });
+  });
+
+  // Rudimentary connection error handling
+  req.on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+
+  // Send the request
+  req.end();
+});
+
+
+client.subscribe('/calendars/update', function(message) {
+  // HTTP request options
+  var options = {
+    method: 'PUT',
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/' + message._id,
+    headers: {
+      'content-type': 'application/json',
+      'if-match': message._rev
+    }
+  };
+
+  // The request object
+  var req = http.request(options, function(response) {
+    console.log("Got response: %s %s:%d%s", response.statusCode, options.host, options.port, options.path);
+
+    // Accumulate the response and publish when done
+    var data = '';
+    response.on('data', function(chunk) { data += chunk; });
+    response.on('end', function() {
+      var couch_response = JSON.parse(data);
+
+      console.log(couch_response)
+
+      client.publish('/calendars/changes', couch_response);
+    });
+  });
+
+  // Rudimentary connection error handling
+  req.on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+
+  // Write the PUT body and send the request
+  req.write(JSON.stringify(message));
+  req.end();
+});
+
+
 if (app.settings.env != 'test') {
   app.listen(3000);
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

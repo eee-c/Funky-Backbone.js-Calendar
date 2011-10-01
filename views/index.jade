@@ -206,6 +206,7 @@ script
           initialize: function(options) {
             this.container = $('#' + this.model.get('startDate'));
             options.model.bind('destroy', this.remove, this);
+            options.model.bind('remove', this.remove, this);
             options.model.bind('error', this.deleteError, this);
             options.model.bind('change', this.render, this);
           },
@@ -370,6 +371,15 @@ script
       console.log(message);
 
       calendar.appointments.add(message);
+    });
+
+
+    faye.subscribe('/calendars/remove', function(message) {
+      console.log('[/calendars/remove]');
+      console.log(message);
+
+      var model = calendar.appointments.get(message);
+      calendar.appointments.remove(model);
     });
 
   });
