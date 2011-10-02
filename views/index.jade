@@ -155,7 +155,10 @@ script
       var Models = (function() {
         var Appointment = Backbone.Model.extend({
           urlRoot : '/appointments',
-          initialize: function(attributes) { this.id = attributes['_id']; },
+          initialize: function(attributes) {
+            if (!this.id)
+              this.id = attributes['_id'];
+          },
           save: function(attributes, options) {
             options || (options = {});
             options['headers'] = {'If-Match': this.get("rev")};
@@ -220,8 +223,7 @@ script
             console.log("editClick");
             e.stopPropagation();
 
-            var edit_view = new AppointmentEdit({model: this.model});
-            edit_view.render();
+            AppointmentEdit.reset({model: this.model});
           },
           deleteError: function(model, error) {
             // TODO: blame the user instead of the programmer...
@@ -237,8 +239,12 @@ script
           }
         });
 
-        var AppointmentEdit = Backbone.View.extend({
+        var AppointmentEdit = new (Backbone.View.extend({
           el: $('#edit-dialog').parent(),
+          reset: function(options) {
+            this.model = options.model;
+            this.render();
+          },
           render: function () {
             $('.ui-dialog-content', this.el).dialog('open');
 
@@ -253,12 +259,13 @@ script
             'click .ok': 'update'
           },
           update: function() {
-            this.model.save({
+            var options = {
               title: $('.title', '#edit-dialog').val(),
               description: $('.description', '#edit-dialog').val()
-            });
+            }
+            this.model.save(options);
           }
-        });
+        }));
 
         var AppointmentAdd = new (Backbone.View.extend({
           el: $("#add-dialog").parent(),
