@@ -10,4 +10,4 @@ The backend storage is CouchDB.
 
 This is exploratory, learning code.  I do some good things, some bad things.  I am only making it available because some people have asked.
 
-If you are looking for good Backbone.js code, check out my book, http://recipeswithbackbone[Recipes with Backbone], co-authored with http://www.ngauthier.com/[Nick Gauthier].
+If you are looking for good Backbone.js code, check out my book, http://recipeswithbackbone.com[Recipes with Backbone], co-authored with http://www.ngauthier.com/[Nick Gauthier].
