@@ -382,6 +382,14 @@ script
       calendar.appointments.remove(model);
     });
 
+    faye.subscribe('/calendars/changes', function(message) {
+      console.log('[/calendars/changes]');
+      console.log(message);
+
+      var model = calendar.appointments.get(message);
+      model.set({rev: message.rev});
+      model.set({_rev: message.rev});
+    });
   });
 
 |<script type="text/template" id="calendar-appointment-template">
