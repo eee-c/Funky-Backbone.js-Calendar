@@ -153,7 +153,11 @@ script
   $(function() {
     var faye = new Faye.Client('/faye');
     Backbone.sync = function(method, model, options) {
-      faye.publish("/calendars/" + method, model);
+      var message = model.toJSON();
+      if (!message._id && message.id) message._id = message.id
+      if (!message._rev && message.rev) message._rev = message.rev
+
+      faye.publish("/calendars/" + method, message);
     }
 
     _(['create', 'update', 'delete', 'read', 'changes']).each(function(method) {
@@ -167,10 +171,6 @@ script
       var Models = (function() {
         var Appointment = Backbone.Model.extend({
           urlRoot : '/appointments',
-          initialize: function(attributes) {
-            if (!this.id)
-              this.id = attributes['_id'];
-          },
           save: function(attributes, options) {
             options || (options = {});
             options['headers'] = {'If-Match': this.get("rev")};
