@@ -170,8 +170,8 @@ script
             });
           },
           get: function(attribute) {
-            return Backbone.Model.prototype.get.call(this, attribute) ||
-                   Backbone.Model.prototype.get.call(this, "_" + attribute);
+            return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
+                   Backbone.Model.prototype.get.call(this, attribute);
           }
         });
 
