@@ -159,6 +159,18 @@ script
             if (!this.id)
               this.id = attributes['_id'];
           },
+          validate: function(attributes) {
+            var errors = [];
+
+            if (!(/\\S/.test(attributes.title)))
+              errors.push("Title cannot be blank.");
+
+            if (!/\\S/.test(attributes.description))
+              errors.push("Description cannot be blank.");
+
+            if (errors.length > 0)
+              return errors;
+          },
           save: function(attributes, options) {
             options || (options = {});
             options['headers'] = {'If-Match': this.get("rev")};
@@ -239,6 +251,10 @@ script
           }
         });
 
+        function handleModelErrors(model, errors) {
+          alert(errors.join("\\n"));
+        }
+
         var AppointmentEdit = new (Backbone.View.extend({
           el: $('#edit-dialog').parent(),
           reset: function(options) {
@@ -288,7 +304,7 @@ script
               title: this.el.find('input.title').val(),
               description: this.el.find('input.description').val(),
               startDate: this.el.find('.startDate').html()
-            });
+            }, {error: handleModelErrors} );
           }
         }));
 
