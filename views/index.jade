@@ -61,6 +61,7 @@ table#calendar
 
 #add-dialog(title="Add calendar appointment")
   h2.startDate
+  div.errors(style="background:yellow; display: none")
   p title
   p
     input.title(type="text", name="title")
@@ -76,7 +77,7 @@ script
       buttons: [
         { text: "OK",
           class: "ok",
-          click: function() { $(this).dialog("close"); } },
+          click: function() { } },
         { text: "Cancel",
           click: function() { $(this).dialog("close"); } }
       ]
@@ -208,7 +209,7 @@ script
           initialize: function(options) {
             this.container = $('#' + this.model.get('startDate'));
             options.model.bind('destroy', this.remove, this);
-            options.model.bind('error', this.deleteError, this);
+            options.model.bind('error', this.handleError, this);
             options.model.bind('change', this.render, this);
           },
           render: function() {
@@ -237,10 +238,13 @@ script
 
             AppointmentEdit.reset({model: this.model});
           },
-          deleteError: function(model, error) {
+          handleError: function(model, error) {
             // TODO: blame the user instead of the programmer...
             if (error.status == 409) {
               alert("This site does not understand CouchDB revisions.");
+            }
+            else if (typeof(error == 'Array')) {
+              alert(error.join("\\n"));
             }
             else {
               alert("This site was made by an idiot.");
@@ -250,10 +254,6 @@ script
             $(this.el).remove();
           }
         });
-
-        function handleModelErrors(model, errors) {
-          alert(errors.join("\\n"));
-        }
 
         var AppointmentEdit = new (Backbone.View.extend({
           el: $('#edit-dialog').parent(),
@@ -300,11 +300,20 @@ script
             'click .ok':  'create'
           },
           create: function() {
-            appointment_collection.create({
+            var attributes = {
               title: this.el.find('input.title').val(),
               description: this.el.find('input.description').val(),
               startDate: this.el.find('.startDate').html()
-            }, {error: handleModelErrors} );
+            };
+
+            var options = {
+              success: function() { $('#add-dialog').dialog("close"); },
+              error: function(model, errors) {
+                $('.errors', '#add-dialog').html(errors.join("<br/>")).show();
+              }
+            };
+
+            appointment_collection.create(attributes, options);
           }
         }));
 
