@@ -49,3 +49,11 @@ tr td.other-month .day-of-month {
   padding: 0px 2px;
   font-weight: bold;
 }
+
+.errors, .error {
+  background-color: yellow;
+}
+
+#edit-dialog div {
+  margin-bottom: 1.5em;
+}

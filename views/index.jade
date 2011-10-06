@@ -76,8 +76,7 @@ script
       modal: true,
       buttons: [
         { text: "OK",
-          class: "ok",
-          click: function() { } },
+          class: "ok" },
         { text: "Cancel",
           click: function() { $(this).dialog("close"); } }
       ]
@@ -86,12 +85,15 @@ script
 
 #edit-dialog(title="Edit calendar appointment")
   h2.startDate
-  p title
-  p
-    input.title(type="text", name="title")
-  p description
-  p
-    input.description(type="text", name="description")
+  div.errors(style="display: none")
+  .title
+    label title
+      br
+      input(type="text", name="title")
+  .description
+    label description
+      br
+      input(type="text", name="description")
 
 script
   $(function() {
@@ -101,7 +103,7 @@ script
       buttons: [
         { text: "OK",
           class: "ok",
-          click: function() { $(this).dialog("close"); } },
+          click: function() {} },
         { text: "Cancel",
           click: function() { $(this).dialog("close"); } }
       ]
@@ -153,6 +155,29 @@ script
 script
   $(function() {
     var Cal = function() {
+      var Errors = function(options) {
+        options || (options = {});
+        this.on = options;
+      };
+
+      _.extend(Errors.prototype, {
+        isEmpty: function() {
+          return (_.size(this.on) === 0);
+        },
+        add: function(attribute, error) {
+          this.on[attribute] = error;
+        },
+        each: function(callback) {
+          _.each(this.on, callback(attribute, error));
+        },
+        full_messages: function() {
+          console.log(this.on);
+          return _.map(this.on, function(error, attribute) {
+            return attribute + " " + error;
+          });
+        }
+      });
+
       var Models = (function() {
         var Appointment = Backbone.Model.extend({
           urlRoot : '/appointments',
@@ -161,15 +186,15 @@ script
               this.id = attributes['_id'];
           },
           validate: function(attributes) {
-            var errors = [];
+            var errors = new Errors();
 
             if (!(/\\S/.test(attributes.title)))
-              errors.push("Title cannot be blank.");
+              errors.add("title", "cannot be blank.");
 
             if (!/\\S/.test(attributes.description))
-              errors.push("Description cannot be blank.");
+              errors.add("description", "cannot be blank.");
 
-            if (errors.length > 0)
+            if (!errors.isEmpty())
               return errors;
           },
           save: function(attributes, options) {
@@ -266,20 +291,32 @@ script
 
             $('.startDate', this.el).
               html(this.model.get("startDate"));
-            $('.title', this.el).
+            $('.title input', this.el).
               val(this.model.get("title"));
-            $('.description', this.el).
+            $('.description input', this.el).
               val(this.model.get("description"));
           },
           events : {
             'click .ok': 'update'
           },
           update: function() {
-            var options = {
-              title: $('.title', '#edit-dialog').val(),
-              description: $('.description', '#edit-dialog').val()
+            var attributes = {
+              title: $('input', '#edit-dialog .title').val(),
+              description: $('input', '#edit-dialog .description').val()
             }
-            this.model.save(options);
+
+            var options = {
+              success: function() { $('#edit-dialog').dialog("close"); },
+              error: function(model, errors) {
+                var full_messages = errors.full_messages();
+
+                $('.errors', '#edit-dialog').
+                  html(full_messages.join("<br/>")).
+                  show();
+              }
+            };
+
+            this.model.save(attributes, options);
           }
         }));
 
