@@ -86,11 +86,11 @@ script
 #edit-dialog(title="Edit calendar appointment")
   h2.startDate
   div.errors(style="display: none")
-  .title
+  p
     label title
       br
       input(type="text", name="title")
-  .description
+  p
     label description
       br
       input(type="text", name="description")
@@ -168,10 +168,11 @@ script
           this.on[attribute] = error;
         },
         each: function(callback) {
-          _.each(this.on, callback(attribute, error));
+          _.each(this.on, function(error, attribute) {
+            callback(attribute, error);
+          });
         },
         full_messages: function() {
-          console.log(this.on);
           return _.map(this.on, function(error, attribute) {
             return attribute + " " + error;
           });
@@ -283,6 +284,7 @@ script
         var AppointmentEdit = new (Backbone.View.extend({
           el: $('#edit-dialog').parent(),
           reset: function(options) {
+            $('.error').removeClass('error');
             this.model = options.model;
             this.render();
           },
@@ -291,18 +293,20 @@ script
 
             $('.startDate', this.el).
               html(this.model.get("startDate"));
-            $('.title input', this.el).
+            $('input[name=title]', this.el).
               val(this.model.get("title"));
-            $('.description input', this.el).
+            $('input[name=description]', this.el).
               val(this.model.get("description"));
           },
           events : {
             'click .ok': 'update'
           },
           update: function() {
+            $('.error').removeClass('error');
+
             var attributes = {
-              title: $('input', '#edit-dialog .title').val(),
-              description: $('input', '#edit-dialog .description').val()
+              title: $('input[name=title]', '#edit-dialog').val(),
+              description: $('input[name=description]', '#edit-dialog').val()
             }
 
             var options = {
@@ -313,6 +317,14 @@ script
                 $('.errors', '#edit-dialog').
                   html(full_messages.join("<br/>")).
                   show();
+
+                errors.each(function(attribute, message) {
+                  $('label', '#edit-dialog').
+                    has('input[name=' + attribute + ']').
+                    addClass('error').
+                    find('input').
+                    wrap('<div class="error"/>');
+                });
               }
             };
 
