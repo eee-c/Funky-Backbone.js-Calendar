@@ -1,4 +1,6 @@
-h1= title
+h1
+  = title
+  span.year-and-month
 
 table#calendar
   thead
@@ -108,7 +110,12 @@ script
   });
 
 script
-  $(add_dates_to_calendar);
+  $(function() {
+    var today = new Date(),
+        year = today.getFullYear(),
+        month = today.getMonth() + 1;
+    draw_calendar(year + '-' + month)
+  });
 
   function ISODateString(d) {
     function pad(n) {return n<10 ? '0'+n : n}
@@ -117,9 +124,24 @@ script
       + pad(d.getDate())
   }
 
-  function add_dates_to_calendar() {
-    var today = new Date(),
-        firstOfTheMonth = new Date(today.getFullYear(), today.getMonth(), 1),
+  function draw_calendar(year_and_month) {
+    $('.year-and-month', 'h1').html(' (' + year_and_month + ') ');
+    reset_calendar();
+    add_dates_to_calendar(year_and_month);
+  };
+
+  function reset_calendar() {
+    $('td', '#calendar').
+      removeClass("other-month").
+      html("");
+
+    $('#week5').show();
+  };
+
+  function add_dates_to_calendar(year_and_month) {
+    var year = parseInt(year_and_month.split(/\\D/)[0], 10),
+        month = parseInt(year_and_month.split(/\\D/)[1], 10) - 1,
+        firstOfTheMonth = new Date(year, month, 1),
         firstSunday = new Date(firstOfTheMonth.getTime() -
                                firstOfTheMonth.getDay()*24*60*60*1000);
 
@@ -130,7 +152,7 @@ script
 
       _([0,1,2,3,4,5,6]).each(function(day) {
         var day_element = day_elements[day],
-            other_month = (date.getMonth() != today.getMonth()),
+            other_month = (date.getMonth() != month),
             html = '<span class="day-of-month">' + date.getDate() + '</span>';
 
         $(day_element).
@@ -183,7 +205,7 @@ script
           model: Models.Appointment,
           url: '/appointments',
           parse: function(response) {
-            return _(response.rows).map(function(row) { return row.doc ;});
+            return _(response.rows).map(function(row) { return row.value ;});
           }
         });
 
@@ -333,11 +355,19 @@ script
         return {Application: Application};
       })();
 
+      function pad(n) {return n<10 ? '0'+n : n}
+
       // Initialize the app
-      var appointments = new Collections.Appointments;
+      var appointments = new Collections.Appointments();
 
       new Views.Application({collection: appointments});
-      appointments.fetch();
+
+      var today = new Date(),
+        year = today.getFullYear(),
+        month = today.getMonth() + 1,
+        year_and_month = year + '-' + pad(month);
+
+      appointments.fetch({data: {date: year_and_month}});
 
       return {
         Models: Models,

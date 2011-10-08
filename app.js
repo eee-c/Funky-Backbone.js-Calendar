@@ -38,7 +38,7 @@ app.get('/appointments', function(req, res){
   var options = {
     host: 'localhost',
     port: 5984,
-    path: '/calendar/_all_docs?include_docs=true'
+    path: '/calendar/_design/appointments/_view/by_month?key="'+ req.param('date') +'"'
   };
 
   http.get(options, function(couch_response) {
