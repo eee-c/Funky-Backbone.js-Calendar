@@ -203,20 +203,16 @@ script
       var Collections = (function() {
         var Appointments = Backbone.Collection.extend({
           model: Models.Appointment,
-          url: '/appointments',
           initialize: function(options) {
             options || (options = {});
             this.date = options.date;
           },
+          url: function () {
+            return '/appointments/' + this.date;
+          },
           setDate: function(date) {
             this.date = date;
             this.fetch();
-          },
-          fetch: function(options) {
-            options || (options = {});
-            var data = (options.data || {});
-            options.data = {date: this.date};
-            return Backbone.Collection.prototype.fetch.call(this, options);
           },
           parse: function(response) {
             return _(response.rows).map(function(row) { return row.value ;});

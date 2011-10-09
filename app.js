@@ -34,11 +34,11 @@ app.get('/', function(req, res){
   });
 });
 
-app.get('/appointments', function(req, res){
+app.get('/appointments/:date', function(req, res){
   var options = {
     host: 'localhost',
     port: 5984,
-    path: '/calendar/_design/appointments/_view/by_month?key="'+ req.param('date') +'"'
+    path: '/calendar/_design/appointments/_view/by_month?key="'+ req.params.date +'"'
   };
 
   http.get(options, function(couch_response) {
@@ -51,21 +51,21 @@ app.get('/appointments', function(req, res){
 });
 
 
-app.get('/appointments/:id', function(req, res){
-  var options = {
-    host: 'localhost',
-    port: 5984,
-    path: '/calendar/' + req.params.id
-  };
+// app.get('/appointments/:id', function(req, res){
+//   var options = {
+//     host: 'localhost',
+//     port: 5984,
+//     path: '/calendar/' + req.params.id
+//   };
 
-  http.get(options, function(couch_response) {
-    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+//   http.get(options, function(couch_response) {
+//     console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
 
-    couch_response.pipe(res);
-  }).on('error', function(e) {
-    console.log("Got error: " + e.message);
-  });
-});
+//     couch_response.pipe(res);
+//   }).on('error', function(e) {
+//     console.log("Got error: " + e.message);
+//   });
+// });
 
 app.delete('/appointments/:id', function(req, res){
   var options = {
