@@ -34,11 +34,11 @@ app.get('/', function(req, res){
   });
 });
 
-app.get('/appointments/:date', function(req, res){
+app.get('/appointments', function(req, res){
   var options = {
     host: 'localhost',
     port: 5984,
-    path: '/calendar/_design/appointments/_view/by_month?key="'+ req.params.date +'"'
+    path: '/calendar/_design/appointments/_view/by_month?key="'+ req.param('date') +'"'
   };
 
   http.get(options, function(couch_response) {
