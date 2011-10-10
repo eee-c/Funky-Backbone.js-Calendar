@@ -214,6 +214,9 @@ script
             this.date = date;
             this.fetch();
           },
+          getDate: function() {
+            return this.date;
+          },
           parse: function(response) {
             return _(response.rows).map(function(row) { return row.value ;});
           }
@@ -335,12 +338,42 @@ script
           }
         });
 
+        var CalendarNavigation = Backbone.View.extend({
+          events: {
+            'a:click': 'preventDefault',
+            'click .previous': 'handlePrevious',
+            'click .next': 'handleNext'
+          },
+          preventDefault: function(e) { e.preventDefault(); },
+          handlePrevious: function() {
+            console.log("[handlePrevious]");
+            var date = Helpers.previousMonth(appointments.getDate());
+            draw_calendar(date);
+            appointments.setDate(date);
+          },
+          handleNext: function () {
+            console.log("[handleNext]");
+            var date = Helpers.nextMonth(appointments.getDate());
+            draw_calendar(date);
+            appointments.setDate(date);
+          },
+          render: function() {
+            this.el.html(
+              '<div class="previous"><a href="#">previous</a></div>' +
+              '<div class="next"><a href="#">next</a></div>'
+            );
+            this.el.find("a").bind('click', function(e) {e.preventDefault();});
+            return this;
+          }
+        });
+
         var Application = Backbone.View.extend({
           initialize: function(options) {
             this.collection = appointment_collection = options.collection;
 
             this.initialize_appointment_views();
             this.initialize_day_views();
+            this.initialize_navigation();
           },
           initialize_appointment_views: function() {
             this.collection.
@@ -352,6 +385,12 @@ script
             $('#calendar td').each(function() {
               new Day({el: this});
             });
+          },
+          initialize_navigation : function() {
+            $('#calendar').append('<div id="calendar-navigation">');
+
+            var nav = new CalendarNavigation({el: $('#calendar-navigation')});
+            nav.render();
           },
           render_appointment: function(appointment) {
             var view = new Appointment({model: appointment});
@@ -368,7 +407,7 @@ script
       var Helpers = (function() {
         function pad(n) {return n<10 ? '0'+n : n}
 
-        function iso8601(date) {
+        function to_iso8601(date) {
           var year = date.getFullYear(),
               month = date.getMonth() + 1,
               day = date.getDate();
@@ -376,12 +415,52 @@ script
           return year + '-' + pad(month) + '-' + pad(day);
         }
 
-        return {iso8601: iso8601};
+        function from_iso8601(date) {
+          var parts = date.split(/\\D+/),
+              year = parseInt(parts[0]),
+              month = parseInt(parts[1], 10),
+              day = parseInt(parts[2] || 1, 10);
+
+          return new Date(year, month-1, day);
+        }
+
+        function firstOfTheMonth(date) {
+          var parts = date.split(/\\D/),
+              year = parseInt(parts[0], 10),
+              month = parseInt(parts.split(/\\D/)[1], 10);
+              firstOfTheMonth = new Date(year, month, 1);
+
+          return to_iso8601(firstOfTheMonth);
+        }
+
+        function previousMonth(month) {
+          var date = from_iso8601(month),
+              msInDay = 24*60*60*1000,
+              msThisMonth = date.getDate()*msInDay,
+              dateInPreviousMonth = new Date(date - msThisMonth - msInDay);
+
+          return to_iso8601(dateInPreviousMonth).substr(0,7);
+        }
+
+        function nextMonth(month) {
+          var date = from_iso8601(month),
+              msInDay = 24*60*60*1000,
+              msThisMonth = date.getDate()*msInDay,
+              dateInNextMonth = new Date(date - msThisMonth + 32*msInDay);
+
+          return to_iso8601(dateInNextMonth).substr(0,7);
+        }
+
+        return {
+          to_iso8601: to_iso8601,
+          previousMonth: previousMonth,
+          nextMonth: nextMonth
+        };
       })();
 
 
       // Initialize the app
-      var year_and_month = Helpers.iso8601(new Date()).substr(0,7),
+      var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
           appointments = new Collections.Appointments({date: year_and_month});
 
       new Views.Application({collection: appointments});
