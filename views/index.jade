@@ -204,14 +204,37 @@ script
         var Appointments = Backbone.Collection.extend({
           model: Models.Appointment,
           url: '/appointments',
+          cached: {},
           initialize: function(options) {
             options || (options = {});
             this.date = options.date;
           },
           fetch: function(options) {
             options || (options = {});
+
+            if (this.cached[this.date]) {
+              var date = this.date;
+              _.each(this.models, function(m) {
+                if (!m.get("startDate")) return;
+                if (m.get("startDate").indexOf(date) > -1) {
+                  m.trigger('change', m, this, options);
+                }
+                else {
+                  m.trigger('destroy', m, this, options);
+                }
+              });
+              return;
+            }
+
+            this.cached[this.date] = true;
+
+            // only fetch appointments from this month
             var data = (options.data || {});
             options.data = {date: this.date};
+
+            // Add fetched appointments to the existing list (don't reset)
+            options.add = true;
+
             return Backbone.Collection.prototype.fetch.call(this, options);
           },
           setDate: function(date) {
