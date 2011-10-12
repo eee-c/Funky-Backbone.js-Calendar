@@ -161,6 +161,9 @@ script
           addClass(other_month ? 'other-month' : '');
 
         date = new Date(date.getTime() + 24*60*60*1000);
+        // Effing daylight savings time
+        if (date.getHours() === 23) date = new Date(date.getTime() + 60*60*1000);
+        if (date.getHours() === 1) date = new Date(date.getTime() - 60*60*1000);
       });
     });
 
@@ -205,7 +208,7 @@ script
           model: Models.Appointment,
           url: '/appointments',
           cached: {},
-          initialize: function(options) {
+          initialize: function(models, options) {
             options || (options = {});
             this.date = options.date;
           },
@@ -213,17 +216,7 @@ script
             options || (options = {});
 
             if (this.cached[this.date]) {
-              var date = this.date;
-              _.each(this.models, function(m) {
-                if (!m.get("startDate")) return;
-                if (m.get("startDate").indexOf(date) > -1) {
-                  m.trigger('change', m, this, options);
-                }
-                else {
-                  m.trigger('destroy', m, this, options);
-                }
-              });
-              return;
+              return this.triggerCacheHits();
             }
 
             this.cached[this.date] = true;
@@ -236,6 +229,13 @@ script
             options.add = true;
 
             return Backbone.Collection.prototype.fetch.call(this, options);
+          },
+          triggerCacheHits: function() {
+            var date = this.date;
+            _.each(this.models, function(m) {
+              if (m.get("startDate").indexOf(date) === 0)
+                m.trigger('cached');
+            });
           },
           setDate: function(date) {
             this.date = date;
@@ -260,6 +260,7 @@ script
             options.model.bind('destroy', this.remove, this);
             options.model.bind('error', this.deleteError, this);
             options.model.bind('change', this.render, this);
+            options.model.bind('cached', this.render, this);
           },
           render: function() {
             $(this.el).html(this.template(this.model.toJSON()));
@@ -488,7 +489,7 @@ script
 
       // Initialize the app
       var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
-          appointments = new Collections.Appointments({date: year_and_month});
+          appointments = new Collections.Appointments(undefined, {date: year_and_month});
 
       new Views.Application({collection: appointments});
 
