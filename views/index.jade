@@ -343,30 +343,25 @@ script
         });
 
         var CalendarNavigation = Backbone.View.extend({
-          events: {
-            'a:click': 'preventDefault',
-            'click .previous': 'handlePrevious',
-            'click .next': 'handleNext'
+          initialize: function(options) {
+            this.collection = options.collection;
+            this.collection.bind('all', _.bind(this.render, this));
           },
-          preventDefault: function(e) { e.preventDefault(); },
-          handlePrevious: function() {
-            console.log("[handlePrevious]");
-            var date = Helpers.previousMonth(appointments.getDate());
-            draw_calendar(date);
-            appointments.setDate(date);
-          },
-          handleNext: function () {
-            console.log("[handleNext]");
-            var date = Helpers.nextMonth(appointments.getDate());
-            draw_calendar(date);
-            appointments.setDate(date);
-          },
+          template: _.template(
+            '<div class="previous">' +
+              '<a href="#month/<%= previous_date %>">previous</a>' +
+            '</div>' +
+            '<div class="next">' +
+              '<a href="#month/<%= next_date %>">next</a>' +
+            '</div>'
+          ),
           render: function() {
-            this.el.html(
-              '<div class="previous"><a href="#">previous</a></div>' +
-              '<div class="next"><a href="#">next</a></div>'
-            );
-            this.el.find("a").bind('click', function(e) {e.preventDefault();});
+            var date = this.collection.getDate();
+            $(this.el).html(this.template({
+              previous_date: Helpers.previousMonth(date),
+              next_date: Helpers.nextMonth(date)
+            }));
+
             return this;
           }
         });
@@ -393,7 +388,10 @@ script
           initialize_navigation : function() {
             $('#calendar').append('<div id="calendar-navigation">');
 
-            var nav = new CalendarNavigation({el: $('#calendar-navigation')});
+            var nav = new CalendarNavigation({
+              el: $('#calendar-navigation'),
+              collection: this.collection
+            });
             nav.render();
           },
           render_appointment: function(appointment) {
@@ -407,6 +405,26 @@ script
 
         return {Application: Application};
       })();
+
+      var Routes = Backbone.Router.extend({
+        routes: {
+          "": "setDefault",
+          "month/:date": "setMonth"
+        },
+
+        setDefault: function() {
+          console.log("[setDefault]");
+          var month = Helpers.to_iso8601(new Date).substr(0,7);
+          window.location = '/#month/' + month;
+        },
+
+        setMonth: function(date) {
+          console.log("[setMonth] %s", date);
+          draw_calendar(date);
+          appointments.setDate(date);
+        }
+      });
+
 
       var Helpers = (function() {
         function pad(n) {return n<10 ? '0'+n : n}
@@ -469,7 +487,8 @@ script
 
       new Views.Application({collection: appointments});
 
-      appointments.fetch();
+      new Routes();
+      Backbone.history.start();
 
       return {
         Models: Models,
