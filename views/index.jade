@@ -251,14 +251,15 @@ script
             this.add(subcollection.models);
           },
           _prefetch: function(date) {
+            this._prefetchMonth('next', date);
+            this._prefetchMonth('previous', date);
+          },
+          _prefetchMonth: function(direction, date) {
             this.fetch({
-              date: Helpers.previousMonth(date),
-              success: function() {console.log("NOP -- prefetch")}
-            });
-
-            this.fetch({
-              date: Helpers.nextMonth(date),
-              success: function() {console.log("NOP -- prefetch")}
+              date: Helpers[direction + 'Month'](date),
+              success: function() {
+                console.log("NOP -- "+ direction +" prefetch")
+              }
             });
           },
           triggerCacheHits: function(date) {
