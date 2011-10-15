@@ -214,31 +214,54 @@ script
           },
           fetch: function(options) {
             options || (options = {});
-            var date = options.date || this.date;
+            options.date || (options.date = this.date);
+            options.success ||
+              (options.success = _.bind(this._prefetch, this, options.date))
 
-            if (this.cached[date]) {
-              return this.triggerCacheHits();
+            this.fetchFromCache(options);
+          },
+          fetchFromCache: function(options) {
+            var success = options.success;
+            options.success = _.bind(function() {
+              this.triggerCacheHits(options.date)
+              success();
+            }, this);
+
+            if (this.cached[options.date]) {
+              options.success();
             }
+            else {
+              this.fetchFromServer(options);
+            }
+          },
+          fetchFromServer: function(options) {
+            var subcollection =
+              this.cached[options.date] =
+              (new MonthAppointments());
 
-            var month =
-              this.cached[date] =
-              new MonthAppointments(undefined, {date: date});
+            var success = options.success;
+            options.success = _.bind(function(collection, resp) {
+              this.addFromSubCollection(collection);
+              success();
+            }, this);
 
-            var that = this;
-            month.fetch({
-              success: function(collection, resp) {
-                that.add(collection.models);
-                if (!options.prefetch) {
-                  that.fetch({
-                    date: Helpers.previousMonth(date),
-                    prefetch: true
-                  });
-                }
-              }
+            subcollection.fetch(options);
+          },
+          addFromSubCollection: function(subcollection) {
+            this.add(subcollection.models);
+          },
+          _prefetch: function(date) {
+            this.fetch({
+              date: Helpers.previousMonth(date),
+              success: function() {console.log("NOP -- prefetch")}
+            });
+
+            this.fetch({
+              date: Helpers.nextMonth(date),
+              success: function() {console.log("NOP -- prefetch")}
             });
           },
-          triggerCacheHits: function() {
-            var date = this.date;
+          triggerCacheHits: function(date) {
             _.each(this.models, function(m) {
               if (m.get("startDate").indexOf(date) === 0)
                 m.trigger('cached');
@@ -266,7 +289,7 @@ script
 
             // only fetch appointments from this month
             var data = (options.data || {});
-            options.data = {date: this.date};
+            options.data = {date: options.date};
 
             return Backbone.Collection.prototype.fetch.call(this, options);
           },
