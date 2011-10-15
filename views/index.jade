@@ -214,21 +214,28 @@ script
           },
           fetch: function(options) {
             options || (options = {});
+            var date = options.date || this.date;
 
-            if (this.cached[this.date]) {
+            if (this.cached[date]) {
               return this.triggerCacheHits();
             }
 
-            this.cached[this.date] = true;
+            var month =
+              this.cached[date] =
+              new MonthAppointments(undefined, {date: date});
 
-            // only fetch appointments from this month
-            var data = (options.data || {});
-            options.data = {date: this.date};
-
-            // Add fetched appointments to the existing list (don't reset)
-            options.add = true;
-
-            return Backbone.Collection.prototype.fetch.call(this, options);
+            var that = this;
+            month.fetch({
+              success: function(collection, resp) {
+                that.add(collection.models);
+                if (!options.prefetch) {
+                  that.fetch({
+                    date: Helpers.previousMonth(date),
+                    prefetch: true
+                  });
+                }
+              }
+            });
           },
           triggerCacheHits: function() {
             var date = this.date;
@@ -243,11 +250,31 @@ script
           },
           getDate: function() {
             return this.date;
+          }
+        });
+
+
+        var MonthAppointments = Backbone.Collection.extend({
+          model: Models.Appointment,
+          url: '/appointments',
+          initialize: function(models, options) {
+            options || (options = {});
+            this.date = options.date;
+          },
+          fetch: function(options) {
+            options || (options = {});
+
+            // only fetch appointments from this month
+            var data = (options.data || {});
+            options.data = {date: this.date};
+
+            return Backbone.Collection.prototype.fetch.call(this, options);
           },
           parse: function(response) {
             return _(response.rows).map(function(row) { return row.value ;});
           }
         });
+
 
         return {Appointments: Appointments};
       })();
