@@ -110,13 +110,6 @@ script
   });
 
 script
-  $(function() {
-    var today = new Date(),
-        year = today.getFullYear(),
-        month = today.getMonth() + 1;
-    draw_calendar(year + '-' + month)
-  });
-
   function ISODateString(d) {
     function pad(n) {return n<10 ? '0'+n : n}
     return d.getFullYear()+'-'
@@ -307,16 +300,17 @@ script
         var Appointment = Backbone.View.extend({
           template: _.template($('#calendar-appointment-template').html()),
           initialize: function(options) {
-            this.container = $('#' + this.model.get('startDate'));
             options.model.bind('destroy', this.remove, this);
             options.model.bind('error', this.deleteError, this);
-            options.model.bind('change', this.render, this);
             options.model.bind('cached', this.render, this);
           },
           render: function() {
             $(this.el).html(this.template(this.model.toJSON()));
-            this.container.append($(this.el));
+            this.container().append($(this.el));
             return this;
+          },
+          container: function() {
+            return $('#' + this.model.get('startDate'));
           },
           events: {
             'click': 'handleClick'
@@ -549,13 +543,18 @@ script
       })();
 
 
-      // Initialize the app
+      // Setup the appointments collection
       var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
           appointments = new Collections.Appointments(undefined, {date: year_and_month});
 
+      // Setup the views
       new Views.Application({collection: appointments});
 
-      new Routes();
+      // Default route
+      Routes.prototype.setMonth(year_and_month);
+
+      // Setup routing
+      routes = new Routes();
       Backbone.history.start();
 
       return {
