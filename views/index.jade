@@ -209,7 +209,7 @@ script
             options || (options = {});
             options.date || (options.date = this.date);
             options.success ||
-              (options.success = _.bind(this._prefetch, this, options.date))
+              (options.success = _.bind(this._prefetch, this, options.date));
 
             this.fetchFromCache(options);
           },
@@ -222,6 +222,7 @@ script
 
             if (this.cached[options.date]) {
               options.success();
+              this.refreshCache(options.date);
             }
             else {
               this.fetchFromServer(options);
@@ -242,6 +243,30 @@ script
           },
           addFromSubCollection: function(subcollection) {
             this.add(subcollection.models);
+          },
+          replace: function(models) {
+            if (_.isArray(models)) {
+              for (var i = 0, l = models.length; i < l; i++) {
+                this._replace(models[i]);
+              }
+            } else {
+            this._replace(models);
+            }
+            return this;
+          },
+          _replace: function(model) {
+            console.log(model);
+            var existing = this.get(model);
+            existing.set(model.toJSON());
+            return existing;
+          },
+          refreshCache: function(date) {
+            console.log("[refreshCache] " + date);
+            this.cached[date].fetch({
+              success: _.bind(function(collection, resp) {
+                this.replace(collection.models);
+              }, this)
+            });
           },
           _prefetch: function(date) {
             this._prefetchMonth('next', date);
@@ -282,8 +307,9 @@ script
             options || (options = {});
 
             // only fetch appointments from this month
-            var data = (options.data || {});
-            options.data = {date: options.date};
+            var date = this.date = (options.date || this.date);
+
+            options.data = {date: date};
 
             return Backbone.Collection.prototype.fetch.call(this, options);
           },
@@ -551,7 +577,7 @@ script
       new Views.Application({collection: appointments});
 
       // Default route
-      Routes.prototype.setMonth(year_and_month);
+      // Routes.prototype.setMonth(year_and_month);
 
       // Setup routing
       routes = new Routes();
