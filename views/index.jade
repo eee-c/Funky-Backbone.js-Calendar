@@ -244,6 +244,16 @@ script
           addFromSubCollection: function(subcollection) {
             this.add(subcollection.models);
           },
+          refreshCache: function(date) {
+            console.log("[refreshCache] " + date);
+            this.cached[date].fetch({
+              success: _.bind(function(collection, resp) {
+                this.replace(collection.models);
+                this.createFound(collection);
+                this.removeMissing(collection);
+              }, this)
+            });
+          },
           replace: function(models) {
             if (_.isArray(models)) {
               for (var i = 0, l = models.length; i < l; i++) {
@@ -254,19 +264,45 @@ script
             }
             return this;
           },
-          _replace: function(model) {
-            console.log(model);
-            var existing = this.get(model);
-            existing.set(model.toJSON());
-            return existing;
+          createFound: function(updated_subcollection) {
+            var found_ids = _.difference(
+              updated_subcollection.pluck("id"),
+              this.existingIds()
+            );
+            console.log("[createFound] " + found_ids.join(", "));
+
+            _.each(found_ids, function(id) {
+              var new_model = updated_subcollection.get(id);
+              this.add(new_model);
+            }, this);
           },
-          refreshCache: function(date) {
-            console.log("[refreshCache] " + date);
-            this.cached[date].fetch({
-              success: _.bind(function(collection, resp) {
-                this.replace(collection.models);
-              }, this)
-            });
+          removeMissing: function(updated_subcollection) {
+            if (updated_subcollection.length == 0) return;
+
+            var startDate = updated_subcollection.at(0).get("startDate"),
+                month = startDate.substr(0,7),
+                ids_in_month = this.
+                  select(function(model) {
+                    return model.get("startDate").indexOf(month) == 0;
+                  }).
+                  map(function(model) {
+                    return model.id;
+                  }),
+                missing_ids = _.difference(
+                  ids_in_month,
+                  updated_subcollection.pluck("id")
+                );
+            console.log("[removeMissing] " + missing_ids.join(", "));
+
+            this.remove(missing_ids);
+          },
+          existingIds: function() {
+            return this.pluck("id");
+          },
+          _replace: function(model) {
+            var existing = this.get(model);
+            if (existing) existing.set(model.toJSON());
+            return existing;
           },
           _prefetch: function(date) {
             this._prefetchMonth('next', date);
