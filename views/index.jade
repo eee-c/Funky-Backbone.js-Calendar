@@ -539,7 +539,14 @@ script
 
       var Routes = Backbone.Router.extend({
         routes: {
+          "": "setDefault",
           "month/:date": "setMonth"
+        },
+
+        setDefault: function() {
+          console.log("[setDefault]");
+          var month = Helpers.to_iso8601(new Date).substr(0,7);
+          window.location = '/#month/' + month;
         },
 
         setMonth: function(date) {
