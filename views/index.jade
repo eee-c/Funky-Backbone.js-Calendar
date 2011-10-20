@@ -365,9 +365,10 @@ script
             options.model.bind('destroy', this.remove, this);
             options.model.bind('error', this.deleteError, this);
             options.model.bind('cached', this.render, this);
+            options.model.bind('change', this.update, this);
           },
           render: function() {
-            $(this.el).html(this.template(this.model.toJSON()));
+            this.update();
             this.container().append($(this.el));
             return this;
           },
@@ -403,6 +404,23 @@ script
             else {
               alert("This site was made by an idiot.");
             }
+          },
+          update: function() {
+            console.log("[Appointment#update]");
+
+            var signature = $.param({
+              title: this.model.get('title')
+            });
+
+            if (this.signature === signature) return this;
+
+            console.log("[Appointment#update] sig change: " + this.signature + " -> " + signature);
+
+            this.signature = signature;
+
+            $(this.el).html(this.template(this.model.toJSON()));
+
+            return this;
           },
           remove: function() {
             $(this.el).remove();
