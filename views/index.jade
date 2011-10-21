@@ -245,7 +245,6 @@ script
             this.add(subcollection.models);
           },
           refreshCache: function(date) {
-            console.log("[refreshCache] " + date);
             this.cached[date].fetch({
               success: _.bind(function(collection, resp) {
                 this.replace(collection.models);
@@ -269,7 +268,6 @@ script
               updated_subcollection.pluck("id"),
               this.existingIds()
             );
-            console.log("[createFound] " + found_ids.join(", "));
 
             _.each(found_ids, function(id) {
               var new_model = updated_subcollection.get(id);
@@ -292,7 +290,6 @@ script
                   ids_in_month,
                   updated_subcollection.pluck("id")
                 );
-            console.log("[removeMissing] " + missing_ids.join(", "));
 
             this.remove(missing_ids);
           },
@@ -312,7 +309,7 @@ script
             this.fetch({
               date: Helpers[direction + 'Month'](date),
               success: function() {
-                console.log("NOP -- "+ direction +" prefetch")
+                // NOP -- "+ direction +" prefetch"
               }
             });
           },
@@ -323,6 +320,7 @@ script
             });
           },
           setDate: function(date) {
+            this.trigger('month:change');
             this.date = date;
             this.fetch();
           },
@@ -362,6 +360,8 @@ script
         var Appointment = Backbone.View.extend({
           template: _.template($('#calendar-appointment-template').html()),
           initialize: function(options) {
+             _.bindAll(this, 'html');
+
             options.model.bind('destroy', this.remove, this);
             options.model.bind('error', this.deleteError, this);
             options.model.bind('cached', this.render, this);
@@ -376,7 +376,8 @@ script
             return $('#' + this.model.get('startDate'));
           },
           events: {
-            'click': 'handleClick'
+            'click': 'handleClick',
+            'hide span': 'remove'
           },
           handleClick: function(e) {
             if ($(e.target).hasClass('delete'))
@@ -406,24 +407,26 @@ script
             }
           },
           update: function() {
-            console.log("[Appointment#update]");
-
             var signature = $.param({
               title: this.model.get('title')
             });
 
-            if (this.signature === signature) return this;
-
-            console.log("[Appointment#update] sig change: " + this.signature + " -> " + signature);
-
-            this.signature = signature;
-
-            $(this.el).html(this.template(this.model.toJSON()));
+            $(this.el).html(this.memoized_html(signature));
 
             return this;
           },
+          html: function() {
+            console.log('new HTML!!!');
+            return this.template(this.model.toJSON());
+          },
+          memoized_html: function() {
+            this._memoized_html || (this._memoized_html = _.memoize(this.html));
+
+            return this._memoized_html(_.last(arguments));
+          },
           remove: function() {
-            $(this.el).remove();
+            console.log('[remove]');
+            $(this.el).empty();
           }
         });
 
@@ -528,6 +531,8 @@ script
               bind('add', _.bind(this.render_appointment, this));
             this.collection.
               bind('reset', _.bind(this.render_appointment_list, this));
+            this.collection.
+              bind('month:change', this.remove_appointment_list, this);
           },
           initialize_day_views: function() {
             $('#calendar td').each(function() {
@@ -549,6 +554,8 @@ script
           },
           render_appointment_list: function(list) {
             list.each(this.render_appointment);
+          },
+          remove_appointment_list: function() {
           }
         });
 
@@ -569,6 +576,8 @@ script
 
         setMonth: function(date) {
           console.log("[setMonth] %s", date);
+
+          $('.appointment').trigger('hide');
           draw_calendar(date);
           appointments.setDate(date);
         }
