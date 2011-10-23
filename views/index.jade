@@ -360,7 +360,7 @@ script
         var Appointment = Backbone.View.extend({
           template: _.template($('#calendar-appointment-template').html()),
           initialize: function(options) {
-             _.bindAll(this, 'html');
+            _.bindAll(this, 'html');
 
             options.model.bind('destroy', this.remove, this);
             options.model.bind('error', this.deleteError, this);
@@ -377,7 +377,7 @@ script
           },
           events: {
             'click': 'handleClick',
-            'hide span': 'remove'
+            'clear span': 'remove'
           },
           handleClick: function(e) {
             if ($(e.target).hasClass('delete'))
@@ -411,6 +411,7 @@ script
               title: this.model.get('title')
             });
 
+            console.log(this.el);
             $(this.el).html(this.memoized_html(signature));
 
             return this;
@@ -425,8 +426,8 @@ script
             return this._memoized_html(_.last(arguments));
           },
           remove: function() {
-            console.log('[remove]');
-            $(this.el).empty();
+            $(this.el).remove().empty();
+            return this;
           }
         });
 
@@ -577,7 +578,7 @@ script
         setMonth: function(date) {
           console.log("[setMonth] %s", date);
 
-          $('.appointment').trigger('hide');
+          $('.appointment').trigger('clear');
           draw_calendar(date);
           appointments.setDate(date);
         }
