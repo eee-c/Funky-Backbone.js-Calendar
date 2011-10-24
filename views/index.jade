@@ -62,22 +62,6 @@ script
   });
 
 script
-  function draw_calendar(year_and_month) {
-    $('.year-and-month', 'h1').html(' (' + year_and_month + ') ');
-    reset_calendar();
-    add_dates_to_calendar(year_and_month);
-  };
-
-  function reset_calendar() {
-    $('td', '#calendar').
-      removeClass("other-month").
-      html("");
-
-    $('#week5').show();
-  };
-
-
-script
   $(function() {
     var Cal = function() {
       var Models = (function() {
@@ -192,7 +176,7 @@ script
             this.render();
           },
           render: function() {
-            $('span.year-and-month', 'h1').html(this.date);
+            $('span.year-and-month', 'h1').html(' (' + this.date + ')');
 
             $(this.el).html(this.template({
               date: this.date
@@ -204,9 +188,8 @@ script
             return this;
           },
           addDates: function() {
-            var year = parseInt(this.date.split(/\\D/)[0], 10),
-                month = parseInt(this.date.split(/\\D/)[1], 10) - 1,
-                firstOfTheMonth = new Date(year, month, 1),
+            var firstOfTheMonth = Helpers.firstOfTheMonth(this.date),
+                month = firstOfTheMonth.getMonth(),
                 firstSunday = new Date(firstOfTheMonth.getTime() -
                                 firstOfTheMonth.getDay()*24*60*60*1000);
 
@@ -225,10 +208,7 @@ script
                   attr('id', Helpers.to_iso8601(date)).
                   addClass(other_month ? 'other-month' : '');
 
-                date = new Date(date.getTime() + 24*60*60*1000);
-                // Effing daylight savings time
-                if (date.getHours() === 23) date = new Date(date.getTime() + 60*60*1000);
-                if (date.getHours() === 1) date = new Date(date.getTime() - 60*60*1000);
+                date = Helpers.dayAfter(date);
               });
             });
           },
@@ -237,7 +217,7 @@ script
             var week5_other_month = _($('td', '.week5')).all(function(el) {
               return $(el).hasClass('other-month')
             });
-            if (week5_other_month) { $('.week5').hide() }
+            if (week5_other_month) $('.week5').hide()
           }
         }));
 
@@ -415,10 +395,9 @@ script
         function firstOfTheMonth(date) {
           var parts = date.split(/\\D/),
               year = parseInt(parts[0], 10),
-              month = parseInt(parts.split(/\\D/)[1], 10);
-              firstOfTheMonth = new Date(year, month, 1);
+              month = parseInt(parts[1], 10) - 1;
 
-          return to_iso8601(firstOfTheMonth);
+          return new Date(year, month, 1);
         }
 
         function previousMonth(month) {
@@ -439,10 +418,25 @@ script
           return to_iso8601(dateInNextMonth).substr(0,7);
         }
 
+        function dayAfter(date) {
+          var plus1 = new Date(date.getTime() + 24*60*60*1000);
+
+          // Effing daylight savings time
+          if (plus1.getHours() === 23)
+            return new Date(plus1.getTime() + 60*60*1000);
+
+          if (plus1.getHours() === 1)
+            return new Date(plus1.getTime() - 60*60*1000);
+
+          return plus1;
+        }
+
         return {
           to_iso8601: to_iso8601,
           previousMonth: previousMonth,
-          nextMonth: nextMonth
+          nextMonth: nextMonth,
+          dayAfter: dayAfter,
+          firstOfTheMonth: firstOfTheMonth
         };
       })();
 
