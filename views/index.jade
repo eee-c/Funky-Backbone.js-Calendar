@@ -70,6 +70,14 @@ table#calendar
   p
     input.description(type="text", name="description")
 
+
+script
+  $(function() {
+    _.templateSettings = {
+      interpolate : /\\{\\{([\\s\\S]+?)\\}\\}/g
+    };
+  });
+
 script
   $(function() {
     $('#add-dialog').dialog({
@@ -349,10 +357,10 @@ script
           },
           template: _.template(
             '<div class="previous">' +
-              '<a href="#month/<%= previous_date %>">previous</a>' +
+              '<a href="#month/{{ previous_date }}">previous</a>' +
             '</div>' +
             '<div class="next">' +
-              '<a href="#month/<%= next_date %>">next</a>' +
+              '<a href="#month/{{ next_date }}">next</a>' +
             '</div>'
           ),
           render: function() {
@@ -504,9 +512,8 @@ script
   });
 
 |<script type="text/template" id="calendar-appointment-template">
-|  <span class="appointment" title="<%= description %>">
-|      <%= title %>
+|  <span class="appointment" title="{{ description }}">
+|      {{title}}
 |      <span class="delete">X</span>
 |  </span>
 |</script>
-
