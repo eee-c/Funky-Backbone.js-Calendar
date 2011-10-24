@@ -226,6 +226,9 @@ script
                   addClass(other_month ? 'other-month' : '');
 
                 date = new Date(date.getTime() + 24*60*60*1000);
+                // Effing daylight savings time
+                if (date.getHours() === 23) date = new Date(date.getTime() + 60*60*1000);
+                if (date.getHours() === 1) date = new Date(date.getTime() - 60*60*1000);
               });
             });
           },
