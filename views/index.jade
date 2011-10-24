@@ -2,64 +2,7 @@ h1
   = title
   span.year-and-month
 
-table#calendar
-  thead
-    tr
-      th S
-      th M
-      th T
-      th W
-      th T
-      th F
-      th S
-  tr#week0
-    td.sunday
-    td.monday
-    td.tuesday
-    td.wednesday
-    td.thursday
-    td.friday
-    td.saturday
-  tr#week1
-    td.sunday
-    td.monday
-    td.tuesday
-    td.wednesday
-    td.thursday
-    td.friday
-    td.saturday
-  tr#week2
-    td.sunday
-    td.monday
-    td.tuesday
-    td.wednesday
-    td.thursday
-    td.friday
-    td.saturday
-  tr#week3
-    td.sunday
-    td.monday
-    td.tuesday
-    td.wednesday
-    td.thursday
-    td.friday
-    td.saturday
-  tr#week4
-    td.sunday
-    td.monday
-    td.tuesday
-    td.wednesday
-    td.thursday
-    td.friday
-    td.saturday
-  tr#week5
-    td.sunday
-    td.monday
-    td.tuesday
-    td.wednesday
-    td.thursday
-    td.friday
-    td.saturday
+#calendar
 
 #add-dialog(title="Add calendar appointment")
   h2.startDate
@@ -74,6 +17,7 @@ table#calendar
 script
   $(function() {
     _.templateSettings = {
+      evaluate : /\\{\\[([\\s\\S]+?)\\]\\}/g,
       interpolate : /\\{\\{([\\s\\S]+?)\\}\\}/g
     };
   });
@@ -118,20 +62,6 @@ script
   });
 
 script
-  $(function() {
-    var today = new Date(),
-        year = today.getFullYear(),
-        month = today.getMonth() + 1;
-    draw_calendar(year + '-' + month)
-  });
-
-  function ISODateString(d) {
-    function pad(n) {return n<10 ? '0'+n : n}
-    return d.getFullYear()+'-'
-      + pad(d.getMonth()+1)+'-'
-      + pad(d.getDate())
-  }
-
   function draw_calendar(year_and_month) {
     $('.year-and-month', 'h1').html(' (' + year_and_month + ') ');
     reset_calendar();
@@ -146,38 +76,6 @@ script
     $('#week5').show();
   };
 
-  function add_dates_to_calendar(year_and_month) {
-    var year = parseInt(year_and_month.split(/\\D/)[0], 10),
-        month = parseInt(year_and_month.split(/\\D/)[1], 10) - 1,
-        firstOfTheMonth = new Date(year, month, 1),
-        firstSunday = new Date(firstOfTheMonth.getTime() -
-                               firstOfTheMonth.getDay()*24*60*60*1000);
-
-    var date = firstSunday;
-    _([0,1,2,3,4,5]).each(function(week) {
-      var week_el = $('#week' + week),
-          day_elements = week_el.find('td');
-
-      _([0,1,2,3,4,5,6]).each(function(day) {
-        var day_element = day_elements[day],
-            other_month = (date.getMonth() != month),
-            html = '<span class="day-of-month">' + date.getDate() + '</span>';
-
-        $(day_element).
-          html(html).
-          attr('id', ISODateString(date)).
-          addClass(other_month ? 'other-month' : '');
-
-        date = new Date(date.getTime() + 24*60*60*1000);
-      });
-    });
-
-    // remove whole week from next month
-    var week5_other_month = _($('#week5').find('td')).all(function(el) {
-      return $(el).hasClass('other-month')
-    });
-    if (week5_other_month) { $('#week5').hide() }
-  }
 
 script
   $(function() {
@@ -285,6 +183,60 @@ script
             $(this.el).remove();
           }
         });
+
+        var Calendar = new (Backbone.View.extend({
+          el: $('#calendar'),
+          template: _.template($('#calendar-template').html()),
+          setDate: function(date) {
+            this.date = date;
+            this.render();
+          },
+          render: function() {
+            $('span.year-and-month', 'h1').html(this.date);
+
+            $(this.el).html(this.template({
+              date: this.date
+            }));
+
+            this.addDates();
+            this.hideEmptyWeeks();
+
+            return this;
+          },
+          addDates: function() {
+            var year = parseInt(this.date.split(/\\D/)[0], 10),
+                month = parseInt(this.date.split(/\\D/)[1], 10) - 1,
+                firstOfTheMonth = new Date(year, month, 1),
+                firstSunday = new Date(firstOfTheMonth.getTime() -
+                                firstOfTheMonth.getDay()*24*60*60*1000);
+
+            var date = firstSunday;
+            _([0,1,2,3,4,5]).each(function(week) {
+              var week_el = $('.week' + week, this.el),
+                  day_elements = week_el.find('td');
+
+              _([0,1,2,3,4,5,6]).each(function(day) {
+                var day_element = day_elements[day],
+                    other_month = (date.getMonth() != month),
+                    html = '<span class="day-of-month">' + date.getDate() + '</span>';
+
+                $(day_element).
+                  html(html).
+                  attr('id', Helpers.to_iso8601(date)).
+                  addClass(other_month ? 'other-month' : '');
+
+                date = new Date(date.getTime() + 24*60*60*1000);
+              });
+            });
+          },
+          hideEmptyWeeks: function() {
+            // remove whole week from next month
+            var week5_other_month = _($('td', '.week5')).all(function(el) {
+              return $(el).hasClass('other-month')
+            });
+            if (week5_other_month) { $('.week5').hide() }
+          }
+        }));
 
         var AppointmentEdit = new (Backbone.View.extend({
           el: $('#edit-dialog').parent(),
@@ -394,7 +346,7 @@ script
             });
           },
           initialize_navigation : function() {
-            $('#calendar').append('<div id="calendar-navigation">');
+            $('#calendar').after('<div id="calendar-navigation">');
 
             var nav = new CalendarNavigation({
               el: $('#calendar-navigation'),
@@ -411,7 +363,10 @@ script
           }
         });
 
-        return {Application: Application};
+        return {
+          Application: Application,
+          Calendar: Calendar
+        };
       })();
 
       var Routes = Backbone.Router.extend({
@@ -428,7 +383,7 @@ script
 
         setMonth: function(date) {
           console.log("[setMonth] %s", date);
-          draw_calendar(date);
+          Views.Calendar.setDate(date);
           appointments.setDate(date);
         }
       });
@@ -516,4 +471,33 @@ script
 |      {{title}}
 |      <span class="delete">X</span>
 |  </span>
+|</script>
+
+|<script type="text/template" id="calendar-template">
+|<table>
+|  <thead>
+|    <tr>
+|      <th>S</th>
+|      <th>M</th>
+|      <th>T</th>
+|      <th>W</th>
+|      <th>T</th>
+|      <th>F</th>
+|      <th>S</th>
+|    </tr>
+|  </thead>
+|  <tbody>
+|  {[ _([0,1,2,3,4,5]).each(function(i) { ]}
+|  <tr class="week{{ i }}">
+|    <td class="sunday"></td>
+|    <td class="monday"></td>
+|    <td class="tuesday"></td>
+|    <td class="wednesday"></td>
+|    <td class="thursday"></td>
+|    <td class="friday"></td>
+|    <td class="saturday"></td>
+|  </tr>
+|  {[ }); ]}
+|  </tbody>
+|</table>
 |</script>
