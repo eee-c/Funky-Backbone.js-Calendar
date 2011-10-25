@@ -170,7 +170,6 @@ script
 
         var Calendar = new (Backbone.View.extend({
           el: $('#calendar'),
-          template: _.template($('#calendar-template').html()),
           setDate: function(date) {
             this.date = date;
             this.render();
@@ -178,48 +177,98 @@ script
           render: function() {
             $('span.year-and-month', 'h1').html(' (' + this.date + ')');
 
-            $(this.el).html(this.template({
-              date: this.date
-            }));
+            $(this.el).html('<table></table>');
 
-            this.addDates();
-            this.hideEmptyWeeks();
+            var table = $('table', this.el);
+
+            var header = new CalendarMonthHeader({parent: table})
+            header.render();
+
+            var body = new CalendarMonthBody({
+              parent: table,
+              date: this.date
+            });
+            body.render();
 
             return this;
+          }
+        }));
+
+
+        var CalendarMonthHeader = Backbone.View.extend({
+          tagName: 'tr',
+          initialize: function(options) {
+            this.parent = options.parent;
           },
-          addDates: function() {
+          render: function() {
+            $(this.el).html('<th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th>');
+            this.parent.append(this.el);
+          }
+        });
+
+
+        var CalendarMonthBody = Backbone.View.extend({
+          initialize: function(options) {
+            this.parent = options.parent;
+            this.date = options.date;
+          },
+          render: function() {
             var firstOfTheMonth = Helpers.firstOfTheMonth(this.date),
                 month = firstOfTheMonth.getMonth(),
                 firstSunday = new Date(firstOfTheMonth.getTime() -
                                 firstOfTheMonth.getDay()*24*60*60*1000);
 
             var date = firstSunday;
-            _([0,1,2,3,4,5]).each(function(week) {
-              var week_el = $('.week' + week, this.el),
-                  day_elements = week_el.find('td');
-
-              _([0,1,2,3,4,5,6]).each(function(day) {
-                var day_element = day_elements[day],
-                    other_month = (date.getMonth() != month),
-                    html = '<span class="day-of-month">' + date.getDate() + '</span>';
-
-                $(day_element).
-                  html(html).
-                  attr('id', Helpers.to_iso8601(date)).
-                  addClass(other_month ? 'other-month' : '');
-
-                date = Helpers.dayAfter(date);
+            while (date == firstSunday || date.getMonth() <= month) {
+              var week = new CalendarMonthWeek({
+                parent: this.parent,
+                date: date
               });
-            });
-          },
-          hideEmptyWeeks: function() {
-            // remove whole week from next month
-            var week5_other_month = _($('td', '.week5')).all(function(el) {
-              return $(el).hasClass('other-month')
-            });
-            if (week5_other_month) $('.week5').hide()
+              week.render();
+
+              date = Helpers.weekAfter(date);
+            }
           }
-        }));
+        });
+
+        var CalendarMonthWeek = Backbone.View.extend({
+          tagName: 'tr',
+          initialize: function(options) {
+            this.parent = options.parent;
+            this.date = options.date;
+          },
+          render: function() {
+            this.parent.append(this.el);
+
+            var date = this.date;
+            for (var i=0; i<7; i++) {
+              var day = new CalendarMonthDay({
+                parent: $(this.el),
+                date: date
+              });
+              day.render();
+
+              date = Helpers.dayAfter(date);
+            }
+          }
+        });
+
+        var CalendarMonthDay = Backbone.View.extend({
+          tagName: 'td',
+          initialize: function(options) {
+            this.parent = options.parent;
+            this.date = options.date;
+          },
+          render: function() {
+            this.parent.append(this.el);
+
+            this.el.id = Helpers.to_iso8601(this.date);
+            var html = '<span class="day-of-month">' + this.date.getDate() + '</span>';
+            $(this.el).html(html);
+
+            return this;
+          }
+        });
 
         var AppointmentEdit = new (Backbone.View.extend({
           el: $('#edit-dialog').parent(),
@@ -431,11 +480,25 @@ script
           return plus1;
         }
 
+        function weekAfter(date) {
+          var plus7 = new Date(date.getTime() + 7*24*60*60*1000);
+
+          // Effing daylight savings time
+          if (plus7.getHours() === 23)
+            return new Date(plus7.getTime() + 60*60*1000);
+
+          if (plus7.getHours() === 1)
+            return new Date(plus7.getTime() - 60*60*1000);
+
+          return plus7;
+        }
+
         return {
           to_iso8601: to_iso8601,
           previousMonth: previousMonth,
           nextMonth: nextMonth,
           dayAfter: dayAfter,
+          weekAfter: weekAfter,
           firstOfTheMonth: firstOfTheMonth
         };
       })();
@@ -468,33 +531,4 @@ script
 |      {{title}}
 |      <span class="delete">X</span>
 |  </span>
-|</script>
-
-|<script type="text/template" id="calendar-template">
-|<table>
-|  <thead>
-|    <tr>
-|      <th>S</th>
-|      <th>M</th>
-|      <th>T</th>
-|      <th>W</th>
-|      <th>T</th>
-|      <th>F</th>
-|      <th>S</th>
-|    </tr>
-|  </thead>
-|  <tbody>
-|  {[ _([0,1,2,3,4,5]).each(function(i) { ]}
-|  <tr class="week{{ i }}">
-|    <td class="sunday"></td>
-|    <td class="monday"></td>
-|    <td class="tuesday"></td>
-|    <td class="wednesday"></td>
-|    <td class="thursday"></td>
-|    <td class="friday"></td>
-|    <td class="saturday"></td>
-|  </tr>
-|  {[ }); ]}
-|  </tbody>
-|</table>
 |</script>
