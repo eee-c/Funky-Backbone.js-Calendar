@@ -168,7 +168,7 @@ script
           }
         });
 
-        var Calendar = new (Backbone.View.extend({
+        var CalendarMonth = new (Backbone.View.extend({
           el: $('#calendar'),
           setDate: function(date) {
             this.date = date;
@@ -181,36 +181,29 @@ script
 
             var table = $('table', this.el);
 
-            var header = new CalendarMonthHeader({parent: table})
+            var header = new CalendarMonthHeader()
             header.render();
+            $(table).append(header.el);
 
-            var body = new CalendarMonthBody({
-              parent: table,
-              date: this.date
-            });
+            var body = new CalendarMonthBody({date: this.date});
             body.render();
+            $(table).append(body.el);
 
             return this;
           }
         }));
 
-
         var CalendarMonthHeader = Backbone.View.extend({
           tagName: 'tr',
-          initialize: function(options) {
-            this.parent = options.parent;
-          },
           render: function() {
             $(this.el).html('<th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th>');
-            this.parent.append(this.el);
           }
         });
 
-
         var CalendarMonthBody = Backbone.View.extend({
           initialize: function(options) {
-            this.parent = options.parent;
             this.date = options.date;
+            this.el = [];
           },
           render: function() {
             var firstOfTheMonth = Helpers.firstOfTheMonth(this.date),
@@ -220,11 +213,9 @@ script
 
             var date = firstSunday;
             while (date == firstSunday || date.getMonth() <= month) {
-              var week = new CalendarMonthWeek({
-                parent: this.parent,
-                date: date
-              });
+              var week = new CalendarMonthWeek({date: date});
               week.render();
+              this.el.push(week.el);
 
               date = Helpers.weekAfter(date);
             }
@@ -234,19 +225,14 @@ script
         var CalendarMonthWeek = Backbone.View.extend({
           tagName: 'tr',
           initialize: function(options) {
-            this.parent = options.parent;
             this.date = options.date;
           },
           render: function() {
-            this.parent.append(this.el);
-
             var date = this.date;
             for (var i=0; i<7; i++) {
-              var day = new CalendarMonthDay({
-                parent: $(this.el),
-                date: date
-              });
+              var day = new CalendarMonthDay({date: date});
               day.render();
+              $(this.el).append(day.el);
 
               date = Helpers.dayAfter(date);
             }
@@ -256,12 +242,9 @@ script
         var CalendarMonthDay = Backbone.View.extend({
           tagName: 'td',
           initialize: function(options) {
-            this.parent = options.parent;
             this.date = options.date;
           },
           render: function() {
-            this.parent.append(this.el);
-
             this.el.id = Helpers.to_iso8601(this.date);
             var html = '<span class="day-of-month">' + this.date.getDate() + '</span>';
             $(this.el).html(html);
@@ -397,7 +380,7 @@ script
 
         return {
           Application: Application,
-          Calendar: Calendar
+          CalendarMonth: CalendarMonth
         };
       })();
 
@@ -415,7 +398,7 @@ script
 
         setMonth: function(date) {
           console.log("[setMonth] %s", date);
-          Views.Calendar.setDate(date);
+          Views.CalendarMonth.setDate(date);
           appointments.setDate(date);
         }
       });
