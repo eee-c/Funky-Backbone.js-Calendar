@@ -120,7 +120,12 @@ script
 
       var Views = (function() {
         var Appointment = Backbone.View.extend({
-          template: _.template($('#calendar-appointment-template').html()),
+          template: _.template(
+            '<span class="appointment" title="{{ description }}">' +
+            '  {{title}}' +
+            '  <span class="delete">X</span>' +
+            '</span>'
+          ),
           initialize: function(options) {
             this.container = $('#' + this.model.get('startDate'));
             options.model.bind('destroy', this.remove, this);
@@ -519,10 +524,3 @@ script
 
     window.calendar = new Cal($('#calendar'));
   });
-
-|<script type="text/template" id="calendar-appointment-template">
-|  <span class="appointment" title="{{ description }}">
-|      {{title}}
-|      <span class="delete">X</span>
-|  </span>
-|</script>
