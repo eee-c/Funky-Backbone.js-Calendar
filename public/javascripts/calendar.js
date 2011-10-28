@@ -305,12 +305,12 @@ window.Cal = function(root_el) {
           bind('reset', _.bind(this.render_appointment_list, this));
       },
       initialize_day_views: function() {
-        $('#calendar td').each(function() {
+        $('td', this.el).each(function() {
           new Day({el: this});
         });
       },
       initialize_navigation : function() {
-        $('#calendar').after('<div id="calendar-navigation">');
+        $(this.el).after('<div id="calendar-navigation">');
 
         var nav = new CalendarNavigation({
           el: $('#calendar-navigation'),
@@ -366,7 +366,7 @@ window.Cal = function(root_el) {
     }
 
     function from_iso8601(date) {
-      var parts = date.split(/\\D+/),
+      var parts = date.split(/\D+/),
           year = parseInt(parts[0]),
           month = parseInt(parts[1], 10),
           day = parseInt(parts[2] || 1, 10);
@@ -375,7 +375,7 @@ window.Cal = function(root_el) {
     }
 
     function firstOfTheMonth(date) {
-      var parts = date.split(/\\D/),
+      var parts = date.split(/\D/),
           year = parseInt(parts[0], 10),
           month = parseInt(parts[1], 10) - 1;
 
