@@ -56,7 +56,7 @@ window.Cal = function(root_el) {
 
   var Views = (function() {
     var Appointment = Backbone.View.extend({
-      template: _.template(
+      template: template(
         '<span class="appointment" title="{{ description }}">' +
         '  {{title}}' +
         '  <span class="delete">X</span>' +
@@ -256,9 +256,8 @@ window.Cal = function(root_el) {
     var CalendarNavigation = Backbone.View.extend({
       initialize: function(options) {
         this.collection = options.collection;
-        this.collection.bind('all', _.bind(this.render, this));
       },
-      template: _.template(
+      template: template(
         '<div class="previous">' +
           '<a href="#month/{{ previous_date }}">previous</a>' +
         '</div>' +
@@ -276,6 +275,19 @@ window.Cal = function(root_el) {
         return this;
       }
     });
+
+    function template(str) {
+      var orig_settings = _.templateSettings;
+      _.templateSettings = {
+        interpolate : /\{\{([\s\S]+?)\}\}/g
+      };
+
+      var t = _.template(str);
+
+      _.templateSettings = orig_settings;
+
+      return t;
+    }
 
     var Application = Backbone.View.extend({
       initialize: function(options) {

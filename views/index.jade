@@ -13,14 +13,6 @@ h1
   p
     input.description(type="text", name="description")
 
-
-script
-  $(function() {
-    _.templateSettings = {
-      interpolate : /\\{\\{([\\s\\S]+?)\\}\\}/g
-    };
-  });
-
 script
   $(function() {
     $('#add-dialog').dialog({
