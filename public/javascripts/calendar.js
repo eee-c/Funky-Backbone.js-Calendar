@@ -35,8 +35,17 @@ window.Cal = function(root_el) {
       },
       fetch: function(options) {
         options || (options = {});
+
         var data = (options.data || {});
         options.data = {date: this.date};
+
+        var collection = this;
+        var success = options.success;
+        options.success = function (resp, status, xhr) {
+          collection.trigger('calendar:change:date');
+          if (success) success(collection, resp);
+        };
+
         return Backbone.Collection.prototype.fetch.call(this, options);
       },
       setDate: function(date) {
@@ -255,7 +264,7 @@ window.Cal = function(root_el) {
 
     var CalendarNavigation = Backbone.View.extend({
       initialize: function(options) {
-        this.collection = options.collection;
+        options.collection.bind('calendar:change:date', this.render, this);
       },
       template: template(
         '<div class="previous">' +
@@ -289,6 +298,19 @@ window.Cal = function(root_el) {
       return t;
     }
 
+    var TitleView = Backbone.View.extend({
+      tagName: 'span',
+      initialize: function(options) {
+        options.collection.bind('calendar:change:date', this.render, this);
+
+        $('span.year-and-month', 'h1').
+          replaceWith(this.el);
+      },
+      render: function() {
+        $(this.el).html(' (' + this.collection.getDate() + ') ');
+      }
+    });
+
     var Application = Backbone.View.extend({
       initialize: function(options) {
         this.collection = appointment_collection = options.collection;
@@ -298,6 +320,7 @@ window.Cal = function(root_el) {
         this.initialize_appointment_views();
         this.initialize_day_views();
         this.initialize_navigation();
+        this.initialize_title();
       },
       setDate: function(date) {
         this.collection.setDate(date);
@@ -329,6 +352,9 @@ window.Cal = function(root_el) {
           collection: this.collection
         });
         nav.render();
+      },
+      initialize_title: function() {
+        new TitleView({collection: this.collection});
       },
       render_appointment: function(appointment) {
         var view = new Appointment({model: appointment});
