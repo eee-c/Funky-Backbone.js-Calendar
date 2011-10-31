@@ -83,7 +83,8 @@ window.Cal = function(root_el) {
         return this;
       },
       events: {
-        'click': 'handleClick'
+        'click': 'handleClick',
+        'calendar:filter': 'filter'
       },
       handleClick: function(e) {
         if ($(e.target).hasClass('delete'))
@@ -102,6 +103,15 @@ window.Cal = function(root_el) {
         e.stopPropagation();
 
         AppointmentEdit.reset({model: this.model});
+      },
+      filter: function(evt, str) {
+        var regexp = new RegExp(str, "i");
+        if (this.model.get("title").toString().match(regexp)) {
+          $(this.el).addClass("highlight");
+        }
+        else {
+          $(this.el).removeClass("highlight");
+        }
       },
       deleteError: function(model, error) {
         // TODO: blame the user instead of the programmer...
@@ -285,6 +295,26 @@ window.Cal = function(root_el) {
       }
     });
 
+    var CalendarFilter = Backbone.View.extend({
+      template: template(
+        '<input type="text" name="filter">' +
+        '<input type="button" class="filter" value="Filter">'
+      ),
+      render: function() {
+        $(this.el).html(this.template());
+        return this;
+      },
+      events: {
+        'click .filter':  'filter'
+      },
+      filter: function() {
+        var filter = $('input[type=text]', this.el).val();
+        console.log('calendar:filter:' + filter);
+        $('body').trigger('calendar:filter', filter);
+      }
+    });
+
+
     function template(str) {
       var orig_settings = _.templateSettings;
       _.templateSettings = {
@@ -320,6 +350,7 @@ window.Cal = function(root_el) {
         this.initialize_appointment_views();
         this.initialize_day_views();
         this.initialize_navigation();
+        this.initialize_filter();
         this.initialize_title();
       },
       setDate: function(date) {
@@ -352,6 +383,14 @@ window.Cal = function(root_el) {
           collection: this.collection
         });
         nav.render();
+      },
+      initialize_filter: function() {
+        $(this.el).after('<div id="calendar-filter">');
+
+        var filter = new CalendarFilter({
+          el: $('#calendar-filter')
+        });
+        filter.render();
       },
       initialize_title: function() {
         new TitleView({collection: this.collection});

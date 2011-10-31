@@ -49,3 +49,8 @@ tr td.other-month .day-of-month {
   padding: 0px 2px;
   font-weight: bold;
 }
+
+.highlight {
+  color: red;
+  background-color: yellow;
+}
