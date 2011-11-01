@@ -76,6 +76,7 @@ window.Cal = function(root_el) {
         options.model.bind('destroy', this.remove, this);
         options.model.bind('error', this.deleteError, this);
         options.model.bind('change', this.render, this);
+        options.model.bind('all', this.filter, this);
       },
       render: function() {
         $(this.el).html(this.template(this.model.toJSON()));
@@ -83,8 +84,7 @@ window.Cal = function(root_el) {
         return this;
       },
       events: {
-        'click': 'handleClick',
-        'calendar:filter': 'filter'
+        'click': 'handleClick'
       },
       handleClick: function(e) {
         if ($(e.target).hasClass('delete'))
@@ -105,6 +105,8 @@ window.Cal = function(root_el) {
         AppointmentEdit.reset({model: this.model});
       },
       filter: function(evt, str) {
+        if (evt.indexOf("calendar:filter") == -1) return;
+
         var regexp = new RegExp(str, "i");
         if (this.model.get("title").toString().match(regexp)) {
           $(this.el).addClass("highlight");
@@ -310,7 +312,9 @@ window.Cal = function(root_el) {
       filter: function() {
         var filter = $('input[type=text]', this.el).val();
         console.log('calendar:filter:' + filter);
-        $('body').trigger('calendar:filter', filter);
+        this.collection.each(function(model) {
+          model.trigger('calendar:filter', filter);
+        });
       }
     });
 
@@ -388,7 +392,8 @@ window.Cal = function(root_el) {
         $(this.el).after('<div id="calendar-filter">');
 
         var filter = new CalendarFilter({
-          el: $('#calendar-filter')
+          el: $('#calendar-filter'),
+          collection: this.collection
         });
         filter.render();
       },
