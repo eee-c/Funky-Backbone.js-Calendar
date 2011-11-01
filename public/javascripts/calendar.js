@@ -157,7 +157,7 @@ window.Cal = function(root_el) {
                             firstOfTheMonth.getDay()*24*60*60*1000);
 
         var date = firstSunday;
-        while (date == firstSunday || date.getMonth() <= month) {
+        while (Helpers.to_iso8601(date).substr(0,7) <= this.date) {
           var week = new CalendarMonthWeek({date: date});
           week.render();
           this.el.push(week.el);
