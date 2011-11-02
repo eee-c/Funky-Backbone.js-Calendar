@@ -195,6 +195,14 @@ window.Cal = function(root_el) {
         $(this.el).html(html);
 
         return this;
+      },
+      events : {
+        'click': 'addClick'
+      },
+      addClick: function(e) {
+        console.log("addClick");
+
+        AppointmentAdd.reset({startDate: this.el.id});
       }
     });
 
@@ -221,7 +229,7 @@ window.Cal = function(root_el) {
         var options = {
           title: $('.title', '#edit-dialog').val(),
           description: $('.description', '#edit-dialog').val()
-        }
+        };
         this.model.save(options);
       }
     }));
@@ -250,17 +258,6 @@ window.Cal = function(root_el) {
         });
       }
     }));
-
-    var Day = Backbone.View.extend({
-      events : {
-        'click': 'addClick'
-      },
-      addClick: function(e) {
-        console.log("addClick");
-
-        AppointmentAdd.reset({startDate: this.el.id});
-      }
-    });
 
     var CalendarNavigation = Backbone.View.extend({
       initialize: function(options) {
@@ -318,7 +315,6 @@ window.Cal = function(root_el) {
         this.render();
 
         this.initialize_appointment_views();
-        this.initialize_day_views();
         this.initialize_navigation();
         this.initialize_title();
       },
@@ -338,11 +334,6 @@ window.Cal = function(root_el) {
           bind('add', _.bind(this.render_appointment, this));
         this.collection.
           bind('reset', _.bind(this.render_appointment_list, this));
-      },
-      initialize_day_views: function() {
-        $('td', this.el).each(function() {
-          new Day({el: this});
-        });
       },
       initialize_navigation : function() {
         $(this.el).after('<div id="calendar-navigation">');
