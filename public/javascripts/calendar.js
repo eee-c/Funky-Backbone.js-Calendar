@@ -235,7 +235,12 @@ window.Cal = function(root_el) {
           val(this.model.get("description"));
       },
       events : {
-        'click .ok': 'update'
+        'click .ok': 'update',
+        'keypress input[type=text]': 'updateOnEnter'
+      },
+      updateOnEnter: function(e) {
+        if (e.keyCode != 13) return;
+        $('.ok', this.el).click();
       },
       update: function() {
         var options = {
@@ -260,7 +265,12 @@ window.Cal = function(root_el) {
         $('.description', this.el).val("");
       },
       events: {
-        'click .ok':  'create'
+        'click .ok':  'create',
+        'keypress input[type=text]': 'createOnEnter'
+      },
+      createOnEnter: function(e) {
+        if (e.keyCode != 13) return;
+        $('.ok', this.el).click();
       },
       create: function() {
         appointment_collection.create({
@@ -304,9 +314,10 @@ window.Cal = function(root_el) {
         return this;
       },
       events: {
-        'click .filter':  'filter'
+        'click .filter':  'filter',
+        'keyup input[type=text]': 'filter'
       },
-      filter: function() {
+      filter: function(e) {
         var filter = $('input[type=text]', this.el).val();
         console.log('calendar:filter:' + filter);
         this.collection.each(function(model) {
