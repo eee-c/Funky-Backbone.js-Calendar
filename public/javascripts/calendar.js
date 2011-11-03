@@ -67,7 +67,7 @@ window.Cal = function(root_el) {
     var Appointment = Backbone.View.extend({
       template: template(
         '<span class="appointment" title="{{ description }}">' +
-        '  {{title}}' +
+        '  <span class="title">{{title}}</span>' +
         '  <span class="delete">X</span>' +
         '</span>'
       ),
@@ -84,25 +84,20 @@ window.Cal = function(root_el) {
         return this;
       },
       events: {
-        'click': 'handleClick'
-      },
-      handleClick: function(e) {
-        if ($(e.target).hasClass('delete'))
-          return this.handleDelete(e);
-
-        return this.handleEdit(e);
+        'click .title': 'handleEdit',
+        'click .delete': 'handleDelete'
       },
       handleDelete: function(e) {
         console.log("deleteClick");
 
-        e.stopPropagation();
         this.model.destroy();
+        return false;
       },
       handleEdit: function(e) {
         console.log("editClick");
-        e.stopPropagation();
 
         AppointmentEdit.reset({model: this.model});
+        return false;
       },
       filter: function(evt, str) {
         if (evt.indexOf("calendar:filter") == -1) return;
@@ -306,8 +301,10 @@ window.Cal = function(root_el) {
 
     var CalendarFilter = Backbone.View.extend({
       template: template(
+        '<form>' +
         '<input type="text" name="filter">' +
-        '<input type="button" class="filter" value="Filter">'
+        '<input type="button" class="filter" value="Filter">' +
+        '</form>'
       ),
       render: function() {
         $(this.el).html(this.template());
@@ -315,7 +312,8 @@ window.Cal = function(root_el) {
       },
       events: {
         'click .filter':  'filter',
-        'keyup input[type=text]': 'filter'
+        'keyup input[type=text]': 'filter',
+        'submit form': 'filter'
       },
       filter: function(e) {
         var filter = $('input[type=text]', this.el).val();
@@ -323,6 +321,7 @@ window.Cal = function(root_el) {
         this.collection.each(function(model) {
           model.trigger('calendar:filter', filter);
         });
+        return false;
       }
     });
 
