@@ -22,7 +22,22 @@ window.Cal = function(root_el) {
       }
     });
 
-    return {Appointment: Appointment};
+    var Invitee = Backbone.Model.extend({
+      urlRoot : '/invitees',
+      initialize: function(attributes) {
+        if (!this.id)
+          this.id = attributes['_id'];
+      },
+      get: function(attribute) {
+        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
+               Backbone.Model.prototype.get.call(this, attribute);
+      }
+    });
+
+    return {
+      Appointment: Appointment,
+      Invitee: Invitee
+    };
   })();
 
   var Collections = (function() {
@@ -60,7 +75,28 @@ window.Cal = function(root_el) {
       }
     });
 
-    return {Appointments: Appointments};
+    var Invitees = Backbone.Collection.extend({
+      model: Models.Invitee,
+      initialize: function(options) {
+        options || (options = {});
+        this.invitees = options.invitees;
+      },
+      fetch: function() {
+        var models = _.map(this.invitees, function(id) {
+          console.log("id: " + id);
+          var invitee = new Models.Invitee({id:id});
+        invitee.fetch({async: false});
+          return invitee;
+        });
+        this.reset(models);
+        return this;
+      }
+    });
+
+    return {
+      Appointments: Appointments,
+      Invitees: Invitees
+    };
   })();
 
   var Views = (function() {
@@ -216,10 +252,19 @@ window.Cal = function(root_el) {
           val(this.model.get("title"));
         $('.description', this.el).
           val(this.model.get("description"));
+
+        var invitees = this.model.get("invitees");
+        if (invitees && invitees.length > 0) {
+          $('.invitees').show();
+        }
+        else {
+          $('.invitees').hide();
+        }
       },
       events : {
         'click .ok': 'update',
-        'keypress input[type=text]': 'updateOnEnter'
+        'keypress input[type=text]': 'updateOnEnter',
+        'click .invitees': 'showInvitees'
       },
       updateOnEnter: function(e) {
         if (e.keyCode != 13) return;
@@ -231,8 +276,32 @@ window.Cal = function(root_el) {
           description: $('.description', '#edit-dialog').val()
         };
         this.model.save(options);
+      },
+      showInvitees: function() {
+        var collection = new Collections.Invitees({invitees: this.model.get("invitees")});
+        var view = new Invitees({collection: collection});
+        $('.invitees').replaceWith(view.el);
+        collection.fetch();
       }
     }));
+
+    var Invitees = Backbone.View.extend({
+      template: template(
+        '<div class="invitees">▼ Invitees</div>' +
+        '<div class="names"> {{names}}</div>'
+      ),
+      initialize: function(options) {
+        options.collection.bind('reset', this.render, this);
+      },
+      render: function() {
+        var names = this.collection.map(function(model) {
+          return model.get("lastName");
+        });
+        $(this.el).html(this.template({names: names.join(", ")}));
+        return this;
+      }
+    });
+
 
     var AppointmentAdd = new (Backbone.View.extend({
       el: $("#add-dialog").parent(),
