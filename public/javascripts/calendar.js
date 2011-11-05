@@ -82,13 +82,22 @@ window.Cal = function(root_el) {
         this.invitees = options.invitees;
       },
       fetch: function() {
+        var collection = this;
         var models = _.map(this.invitees, function(id) {
           var invitee = new Models.Invitee({id:id});
+          invitee.bind('change', collection.handleModelFetch, collection);
           invitee.fetch();
           return invitee;
         });
-        this.reset(models);
+        this.reset(models, {silent: true});
         return this;
+      },
+      handleModelFetch: function() {
+        this.fetchedCount || (this.fetchedCount = 0);
+        if (++this.fetchedCount >= this.invitees.length) {
+          this.trigger('reset', this);
+          this.fetchedCount = 0;
+        }
       }
     });
 
@@ -290,6 +299,10 @@ window.Cal = function(root_el) {
     }));
 
     var Invitees = Backbone.View.extend({
+      initialize: function(options) {
+        options.collection.bind('reset', this.render, this);
+        this.expanded = true;
+      },
       template: function() {
         var which = this.expanded ? 'Expanded' : 'Collapsed';
         return this['template' +  which](arguments[0]);
@@ -301,10 +314,6 @@ window.Cal = function(root_el) {
         '<div class="label">▼ Invitees</div>' +
         '<div class="names"> {{names}}</div>'
       ),
-      initialize: function(options) {
-        options.collection.bind('reset', this.render, this);
-        this.expanded = true;
-      },
       events: {
         'click .label': 'toggle'
       },
