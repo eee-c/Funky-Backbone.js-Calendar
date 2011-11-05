@@ -49,3 +49,7 @@ tr td.other-month .day-of-month {
   padding: 0px 2px;
   font-weight: bold;
 }
+
+.invitees .names {
+  padding-left: 2.5ex;
+}

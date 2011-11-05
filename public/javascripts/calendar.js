@@ -83,9 +83,8 @@ window.Cal = function(root_el) {
       },
       fetch: function() {
         var models = _.map(this.invitees, function(id) {
-          console.log("id: " + id);
           var invitee = new Models.Invitee({id:id});
-        invitee.fetch({async: false});
+          invitee.fetch();
           return invitee;
         });
         this.reset(models);
@@ -253,18 +252,11 @@ window.Cal = function(root_el) {
         $('.description', this.el).
           val(this.model.get("description"));
 
-        var invitees = this.model.get("invitees");
-        if (invitees && invitees.length > 0) {
-          $('.invitees').show();
-        }
-        else {
-          $('.invitees').hide();
-        }
+        this.showInvitees();
       },
       events : {
         'click .ok': 'update',
-        'keypress input[type=text]': 'updateOnEnter',
-        'click .invitees': 'showInvitees'
+        'keypress input[type=text]': 'updateOnEnter'
       },
       updateOnEnter: function(e) {
         if (e.keyCode != 13) return;
@@ -278,20 +270,47 @@ window.Cal = function(root_el) {
         this.model.save(options);
       },
       showInvitees: function() {
-        var collection = new Collections.Invitees({invitees: this.model.get("invitees")});
+        $('.invitees', this.el).remove();
+        $('#edit-dialog').append('<div class="invitees"></div>');
+
+        var invitees = this.model.get("invitees");
+
+        if (!invitees) return this;
+        if (invitees.length == 0) return this;
+
+        var collection = new Collections.Invitees({invitees: invitees});
         var view = new Invitees({collection: collection});
-        $('.invitees').replaceWith(view.el);
+
+        $('.invitees').append(view.render().el);
+
         collection.fetch();
+
+        return this;
       }
     }));
 
     var Invitees = Backbone.View.extend({
-      template: template(
-        '<div class="invitees">▼ Invitees</div>' +
+      template: function() {
+        var which = this.expanded ? 'Expanded' : 'Collapsed';
+        return this['template' +  which](arguments[0]);
+      },
+      templateCollapsed: template(
+        '<div class="label">► Invitees</div>'
+      ),
+      templateExpanded: template(
+        '<div class="label">▼ Invitees</div>' +
         '<div class="names"> {{names}}</div>'
       ),
       initialize: function(options) {
         options.collection.bind('reset', this.render, this);
+        this.expanded = true;
+      },
+      events: {
+        'click .label': 'toggle'
+      },
+      toggle: function() {
+        this.expanded = !this.expanded;
+        this.render();
       },
       render: function() {
         var names = this.collection.map(function(model) {
