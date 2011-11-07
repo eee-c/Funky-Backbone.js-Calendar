@@ -5,6 +5,8 @@ window.Cal = function(root_el) {
       initialize: function(attributes) {
         if (!this.id)
           this.id = attributes['_id'];
+
+        this.loadInvitees();
       },
       save: function(attributes, options) {
         options || (options = {});
@@ -19,6 +21,12 @@ window.Cal = function(root_el) {
       get: function(attribute) {
         return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
                Backbone.Model.prototype.get.call(this, attribute);
+      },
+      loadInvitees: function() {
+        var ids = this.get("invitees") || [];
+
+        this.invitees = new Collections.Invitees({invitees: ids});
+        this.invitees.fetch();
       }
     });
 
@@ -282,17 +290,11 @@ window.Cal = function(root_el) {
         $('.invitees', this.el).remove();
         $('#edit-dialog').append('<div class="invitees"></div>');
 
-        var invitees = this.model.get("invitees");
+        if (this.model.invitees.length == 0) return this;
 
-        if (!invitees) return this;
-        if (invitees.length == 0) return this;
-
-        var collection = new Collections.Invitees({invitees: invitees});
-        var view = new Invitees({collection: collection});
+        var view = new Invitees({collection: this.model.invitees});
 
         $('.invitees').append(view.render().el);
-
-        collection.fetch();
 
         return this;
       }
