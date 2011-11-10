@@ -67,6 +67,27 @@ app.get('/invitees/:id', function(req, res){
   });
 });
 
+app.get('/invitees', function(req, res){
+  var options = {
+    method: 'POST',
+    host: 'localhost',
+    port: 5984,
+    path: '/calendar/_all_docs?include_docs=true'
+  };
+
+  var couch_req = http.request(options, function(couch_response) {
+    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+
+    couch_response.pipe(res);
+  }).on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+
+  var ids = req.param('ids').split(/,/);
+  couch_req.write(JSON.stringify({"keys":ids}));
+  couch_req.end();
+});
+
 app.delete('/appointments/:id', function(req, res){
   var options = {
     method: 'DELETE',

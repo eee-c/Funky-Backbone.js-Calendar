@@ -1,13 +1,34 @@
 window.Cal = function(root_el) {
   var Models = (function() {
-    var Appointment = Backbone.Model.extend({
+    Invitee = Backbone.RelationalModel.extend({
+      urlRoot : '/invitees',
+      initialize: function(attributes) {
+        if (!this.id)
+          this.id = attributes['_id'];
+      },
+      get: function(attribute) {
+        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
+               Backbone.Model.prototype.get.call(this, attribute);
+      }
+    });
+
+    Appointment = Backbone.RelationalModel.extend({
       urlRoot : '/appointments',
       initialize: function(attributes) {
         if (!this.id)
           this.id = attributes['_id'];
 
-        this.loadInvitees();
+        this.fetchRelated("invitees");
+        // this.loadInvitees();
       },
+      relations: [
+        {
+          type: Backbone.HasMany,
+          key: 'invitees',
+          relatedModel: 'Invitee',
+          collectionType: 'Invitees'
+        }
+      ],
       save: function(attributes, options) {
         options || (options = {});
         options['headers'] = {'If-Match': this.get("rev")};
@@ -27,18 +48,6 @@ window.Cal = function(root_el) {
 
         this.invitees = new Collections.Invitees({invitees: ids});
         this.invitees.fetch();
-      }
-    });
-
-    var Invitee = Backbone.Model.extend({
-      urlRoot : '/invitees',
-      initialize: function(attributes) {
-        if (!this.id)
-          this.id = attributes['_id'];
-      },
-      get: function(attribute) {
-        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
-               Backbone.Model.prototype.get.call(this, attribute);
       }
     });
 
@@ -83,29 +92,18 @@ window.Cal = function(root_el) {
       }
     });
 
-    var Invitees = Backbone.Collection.extend({
+    Invitees = Backbone.Collection.extend({
       model: Models.Invitee,
-      initialize: function(options) {
-        options || (options = {});
-        this.invitees = options.invitees;
+
+      url: function( models ) {
+        return '/invitees?' + ( models ? 'ids=' + _.pluck( models, 'id' ).join(',') : '' );
       },
-      fetch: function() {
-        var collection = this;
-        var models = _.map(this.invitees, function(id) {
-          var invitee = new Models.Invitee({id:id});
-          invitee.bind('change', collection.handleModelFetch, collection);
-          invitee.fetch();
-          return invitee;
+      parse: function(response) {
+        return _(response.rows).map(function(row) {
+          var doc = row.doc;
+          doc['id'] = doc['_id'];
+          return doc;
         });
-        this.reset(models, {silent: true});
-        return this;
-      },
-      handleModelFetch: function() {
-        this.fetchedCount || (this.fetchedCount = 0);
-        if (++this.fetchedCount >= this.invitees.length) {
-          this.trigger('reset', this);
-          this.fetchedCount = 0;
-        }
       }
     });
 
@@ -290,9 +288,9 @@ window.Cal = function(root_el) {
         $('.invitees', this.el).remove();
         $('#edit-dialog').append('<div class="invitees"></div>');
 
-        if (this.model.invitees.length == 0) return this;
+        if (this.model.get("invitees").length == 0) return this;
 
-        var view = new Invitees({collection: this.model.invitees});
+        var view = new Invitees({collection: this.model.get("invitees")});
 
         $('.invitees').append(view.render().el);
 
