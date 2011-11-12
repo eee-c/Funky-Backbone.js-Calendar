@@ -2,17 +2,22 @@
 jasmine.getFixtures().preload('homepage.html');
 
 describe("Home", function() {
-  var server,
-      couch_doc = {
+  var server
+    , year = (new Date).getFullYear()
+    , m = (new Date).getMonth() + 1
+    , month = m<10 ? '0'+m : m
+    , fourteenth = year + '-' + month + "-14"
+    , fifteenth = year + '-' + month + "-15"
+    , couch_doc = {
         "_id": "42",
         "_rev": "1-2345",
         "title": "Get Funky",
         "description": "asdf",
-        "startDate": "2011-09-15"
-      },
-      doc_list = {
+        "startDate": fifteenth
+      }
+    , doc_list = {
         "total_rows": 1,
-        "rows":[{"doc": couch_doc}]
+        "rows":[{"value": couch_doc}]
       };
 
   beforeEach(function() {
@@ -23,7 +28,7 @@ describe("Home", function() {
     loadFixtures('homepage.html');
 
     // populate appointments for this month
-    server.respondWith('GET', '/appointments',
+    server.respondWith('GET', /\/appointments/,
       [200, { "Content-Type": "application/json" }, JSON.stringify(doc_list)]);
     server.respond();
   });
@@ -40,13 +45,13 @@ describe("Home", function() {
 
   describe("appointments", function() {
     it("populates the calendar with appointments", function() {
-      expect($('#2011-09-15')).toHaveText(/Get Funky/);
+      expect($('#' + fifteenth)).toHaveText(/Get Funky/);
     });
   });
 
   describe("adding an appointment", function() {
     it("sends clicks on day to an add dialog", function() {
-      $('#2011-09-14').click();
+      $('#' + fourteenth).click();
 
       var dialog = $('#add-dialog').parent();
       expect(dialog).toBeVisible();
@@ -54,12 +59,12 @@ describe("Home", function() {
     });
 
     it("displays the date clicked in the add dialog", function() {
-      $('#2011-09-14').click();
+      $('#' + fourteenth).click();
       expect($('#add-dialog')).toHaveText(/2011-09-14/);
     });
 
     it("adds a new appointment to the UI when saved", function() {
-      $('#2011-09-14').click();
+      $('#' + fourteenth).click();
       $('.ok:visible').click();
 
       var appointment = {
@@ -73,7 +78,7 @@ describe("Home", function() {
       server.respondWith('POST', '/appointments', JSON.stringify(appointment));
       server.respond();
 
-      expect($('#2011-09-14')).toHaveText(/Groovy/);
+      expect($('#' + fourteenth)).toHaveText(/Groovy/);
     });
   });
 
@@ -81,13 +86,13 @@ describe("Home", function() {
     it("clicking the \"X\" removes records from the data store and UI", function() {
       jasmine.Clock.useMock();
 
-      $('.delete', '#2011-09-15').click();
+      $('.delete', '#' + fifteenth).click();
 
       server.respondWith('DELETE', '/appointments/42', '{"id":"42"}');
       server.respond();
 
       jasmine.Clock.tick(5000);
-      expect($('#2011-09-15')).not.toHaveText(/Funky/);
+      expect($('#' + fifteenth)).not.toHaveText(/Funky/);
     });
   });
 
@@ -103,7 +108,7 @@ describe("Home", function() {
     });
 
     it("binds click events on the appointment to an edit dialog", function() {
-      $('.appointment', '#2011-09-15').click();
+      $('.appointment', '#' + fifteenth).click();
       expect($('#edit-dialog')).toBeVisible();
     });
 
@@ -114,17 +119,17 @@ describe("Home", function() {
       server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
       server.respond();
 
-      expect($('#2011-09-15')).toHaveText(/Changed/);
+      expect($('#' + fifteenth)).toHaveText(/Changed/);
     });
 
     it("can edit appointments through an edit dialog", function() {
-      $('.appointment', '#2011-09-15').click();
+      $('.appointment', '#' + fifteenth).click();
       $('.ok:visible').click();
 
       server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
       server.respond();
 
-      expect($('#2011-09-15')).toHaveText(/Changed/);
+      expect($('#' + fifteenth)).toHaveText(/Changed/);
     });
   });
 });
