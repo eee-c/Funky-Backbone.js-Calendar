@@ -1,61 +1,5 @@
 window.Cal = function(root_el) {
-  var Models = (function() {
-    Invitee = Backbone.RelationalModel.extend({
-      urlRoot : '/invitees',
-      initialize: function(attributes) {
-        if (!this.id)
-          this.id = attributes['_id'];
-      },
-      get: function(attribute) {
-        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
-               Backbone.Model.prototype.get.call(this, attribute);
-      }
-    });
-
-    Appointment = Backbone.RelationalModel.extend({
-      urlRoot : '/appointments',
-      initialize: function(attributes) {
-        if (!this.id)
-          this.id = attributes['_id'];
-
-        this.fetchRelated("invitees");
-        // this.loadInvitees();
-      },
-      relations: [
-        {
-          type: Backbone.HasMany,
-          key: 'invitees',
-          relatedModel: 'Invitee',
-          collectionType: 'Invitees'
-        }
-      ],
-      save: function(attributes, options) {
-        options || (options = {});
-        options['headers'] = {'If-Match': this.get("rev")};
-        Backbone.Model.prototype.save.call(this, attributes, options);
-      },
-      destroy: function() {
-        Backbone.Model.prototype.destroy.call(this, {
-          headers: {'If-Match': this.get("rev")}
-        });
-      },
-      get: function(attribute) {
-        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
-               Backbone.Model.prototype.get.call(this, attribute);
-      },
-      loadInvitees: function() {
-        var ids = this.get("invitees") || [];
-
-        this.invitees = new Collections.Invitees({invitees: ids});
-        this.invitees.fetch();
-      }
-    });
-
-    return {
-      Appointment: Appointment,
-      Invitee: Invitee
-    };
-  })();
+  var application = this;
 
   var Collections = (function() {
     var Appointments = Backbone.Collection.extend({
@@ -92,7 +36,7 @@ window.Cal = function(root_el) {
       }
     });
 
-    Invitees = Backbone.Collection.extend({
+    var Invitees = Backbone.Collection.extend({
       model: Models.Invitee,
 
       url: function( models ) {
@@ -110,6 +54,58 @@ window.Cal = function(root_el) {
     return {
       Appointments: Appointments,
       Invitees: Invitees
+    };
+  })();
+
+  var Models = (function() {
+    Invitee = Backbone.RelationalModel.extend({
+      urlRoot : '/invitees',
+      initialize: function(attributes) {
+        if (!this.id)
+          this.id = attributes['_id'];
+      },
+      get: function(attribute) {
+        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
+               Backbone.Model.prototype.get.call(this, attribute);
+      }
+    });
+
+    var Appointment = Backbone.RelationalModel.extend({
+      namespace: application,
+      urlRoot : '/appointments',
+      initialize: function(attributes) {
+        if (!this.id)
+          this.id = attributes['_id'];
+
+        this.fetchRelated("invitees");
+      },
+      relations: [
+        {
+          type: Backbone.HasMany,
+          key: 'invitees',
+          relatedModel: 'Invitee',
+          collectionType: Collections.Invitees
+        }
+      ],
+      save: function(attributes, options) {
+        options || (options = {});
+        options['headers'] = {'If-Match': this.get("rev")};
+        Backbone.Model.prototype.save.call(this, attributes, options);
+      },
+      destroy: function() {
+        Backbone.Model.prototype.destroy.call(this, {
+          headers: {'If-Match': this.get("rev")}
+        });
+      },
+      get: function(attribute) {
+        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
+               Backbone.Model.prototype.get.call(this, attribute);
+      }
+    });
+
+    return {
+      Appointment: Appointment,
+      Invitee: Invitee
     };
   })();
 
