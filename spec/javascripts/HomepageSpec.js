@@ -60,7 +60,7 @@ describe("Home", function() {
 
     it("displays the date clicked in the add dialog", function() {
       $('#' + fourteenth).click();
-      expect($('#add-dialog')).toHaveText(/2011-09-14/);
+      expect($('#add-dialog')).toHaveText(new RegExp(fourteenth));
     });
 
     it("adds a new appointment to the UI when saved", function() {
@@ -70,7 +70,7 @@ describe("Home", function() {
       var appointment = {
         "id": "42",
         "rev": "1-2345",
-        "startDate": "2011-09-14",
+        "startDate": fourteenth,
         "title": "Groovy meeting",
         "description": "asdf"
       };
