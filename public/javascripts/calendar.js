@@ -480,7 +480,11 @@ window.Cal = function(root_el) {
       });
 
   new Routes({application: application});
-  Backbone.history.start();
+  try {
+    Backbone.history.start();
+  } catch (x) {
+    console.log(x)
+  }
 
   return {
     Models: Models,
