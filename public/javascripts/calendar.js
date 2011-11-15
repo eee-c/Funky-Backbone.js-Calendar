@@ -226,6 +226,8 @@ window.Cal = function(root_el) {
         $('.ok', this.el).click();
       },
       update: function() {
+        if (!this.model) return;
+
         var options = {
           title: $('.title', '#edit-dialog').val(),
           description: $('.description', '#edit-dialog').val()
