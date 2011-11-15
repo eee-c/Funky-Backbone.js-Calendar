@@ -111,7 +111,7 @@ describe("Home", function() {
     });
 
     it("binds click events on the appointment to an edit dialog", function() {
-      $('.appointment', '#' + fifteenth).click();
+      $('.title', '#' + fifteenth).click();
       expect($('#edit-dialog')).toBeVisible();
     });
 
@@ -126,7 +126,7 @@ describe("Home", function() {
     });
 
     it("can edit appointments through an edit dialog", function() {
-      $('.appointment', '#' + fifteenth).click();
+      $('.title', '#' + fifteenth).click();
       $('.ok:visible').click();
 
       server.respondWith('PUT', '/appointments/42', '{"title":"Changed!!!"}');
