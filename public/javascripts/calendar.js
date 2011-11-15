@@ -29,7 +29,7 @@ window.Cal = function(root_el) {
     var Appointments = Backbone.Collection.extend({
       model: Models.Appointment,
       url: '/appointments',
-      initialize: function(options) {
+      initialize: function(models, options) {
         options || (options = {});
         this.date = options.date;
       },
@@ -473,7 +473,7 @@ window.Cal = function(root_el) {
 
   // Initialize the app
   var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
-      appointments = new Collections.Appointments({date: year_and_month}),
+      appointments = new Collections.Appointments([], {date: year_and_month}),
       application = new Views.Application({
         collection: appointments,
         el: root_el
@@ -483,7 +483,7 @@ window.Cal = function(root_el) {
   try {
     Backbone.history.start();
   } catch (x) {
-    console.log(x)
+    console.log(x);
   }
 
   return {
