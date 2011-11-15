@@ -27,8 +27,11 @@ describe("Home", function() {
     // load fixutre into memory (already preloaded before sinon.js)
     loadFixtures('homepage.html');
 
+    Backbone.history.loadUrl();
+
+
     // populate appointments for this month
-    server.respondWith('GET', /\/appointments/,
+    server.respondWith('GET', /\/appointments\?/,
       [200, { "Content-Type": "application/json" }, JSON.stringify(doc_list)]);
     server.respond();
   });
