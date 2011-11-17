@@ -4,54 +4,6 @@ h1
 
 #calendar
 
-#add-dialog(title="Add calendar appointment")
-  h2.startDate
-  p title
-  p
-    input.title(type="text", name="title")
-  p description
-  p
-    input.description(type="text", name="description")
-
-script
-  $(function() {
-    $('#add-dialog').dialog({
-      autoOpen: false,
-      modal: true,
-      buttons: [
-        { text: "OK",
-          class: "ok",
-          click: function() { $(this).dialog("close"); } },
-        { text: "Cancel",
-          click: function() { $(this).dialog("close"); } }
-      ]
-    });
-  });
-
-#edit-dialog(title="Edit calendar appointment")
-  h2.startDate
-  p title
-  p
-    input.title(type="text", name="title")
-  p description
-  p
-    input.description(type="text", name="description")
-
-script
-  $(function() {
-    $('#edit-dialog').dialog({
-      autoOpen: false,
-      modal: true,
-      buttons: [
-        { text: "OK",
-          class: "ok",
-          click: function() { $(this).dialog("close"); } },
-        { text: "Cancel",
-          click: function() { $(this).dialog("close"); } }
-      ]
-    });
-  });
-
 script
   $(function() {
     window.calendar = new Cal($('#calendar'));
