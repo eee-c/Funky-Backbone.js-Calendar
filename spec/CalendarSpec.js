@@ -1,4 +1,4 @@
-describe("Home", function() {
+describe("Calendar", function() {
   var server
     , year = (new Date).getFullYear()
     , m = (new Date).getMonth() + 1
