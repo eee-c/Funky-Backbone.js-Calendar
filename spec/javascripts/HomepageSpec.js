@@ -1,6 +1,3 @@
-// Load before fiddling with XHR for stubbing responses
-jasmine.getFixtures().preload('homepage.html');
-
 describe("Home", function() {
   var server
     , year = (new Date).getFullYear()
@@ -24,17 +21,22 @@ describe("Home", function() {
     // stub XHR requests with sinon.js
     server = sinon.fakeServer.create();
 
-    // load fixutre into memory (already preloaded before sinon.js)
-    loadFixtures('homepage.html');
+    $('body').append('<div id="calendar"/>');
+    window.calendar = new Cal($('#calendar'));
 
     Backbone.history.loadUrl();
-
 
     // populate appointments for this month
     server.respondWith('GET', /\/appointments\?/,
       [200, { "Content-Type": "application/json" }, JSON.stringify(doc_list)]);
     server.respond();
   });
+
+  afterEach(function() {
+    $('#calendar').remove();
+    $('#calendar-navigation').remove();
+  });
+
 
   afterEach(function() {
     // allow normal XHR requests to work again
