@@ -24,12 +24,14 @@ describe("Home", function() {
     $('body').append('<div id="calendar"/>');
     window.calendar = new Cal($('#calendar'));
 
-    Backbone.history.loadUrl();
+    // Backbone.history.loadUrl();
+    window.calendar.application.setDate("2011-11");
 
     // populate appointments for this month
-    server.respondWith('GET', /\/appointments\?/,
+    server.respondWith('GET', /\/appointments/,
       [200, { "Content-Type": "application/json" }, JSON.stringify(doc_list)]);
     server.respond();
+
   });
 
   afterEach(function() {

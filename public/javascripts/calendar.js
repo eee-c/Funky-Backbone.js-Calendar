@@ -45,6 +45,10 @@ window.Cal = function(root_el) {
           collection.trigger('calendar:change:date');
           if (success) success(collection, resp);
         };
+        options.error = function () {
+          console.log("[fetch] Dang");
+          console.log(arguments);
+        };
 
         return Backbone.Collection.prototype.fetch.call(this, options);
       },
@@ -549,18 +553,19 @@ window.Cal = function(root_el) {
         el: root_el
       });
 
-  new Routes({application: application});
-  try {
-    Backbone.history.start();
-  } catch (x) {
-    console.log(x);
-  }
+  // new Routes({application: application});
+  // try {
+  //   Backbone.history.start();
+  // } catch (x) {
+  //   console.log(x);
+  // }
 
   return {
     Models: Models,
     Collections: Collections,
     Views: Views,
     Helpers: Helpers,
-    appointments: appointments
+    appointments: appointments,
+    application: application
   };
 };
