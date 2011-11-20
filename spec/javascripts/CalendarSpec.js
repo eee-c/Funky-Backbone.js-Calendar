@@ -51,7 +51,7 @@ describe("Calendar", function() {
     $('#calendar-edit-appointment').remove();
   });
 
-  describe("appointments", function() {
+  describe("a collection of appointments", function() {
     it("populates the calendar with appointments", function() {
       expect($('#' + fifteenth)).toHaveText(/Get Funky/);
     });
