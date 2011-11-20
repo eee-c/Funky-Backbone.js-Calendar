@@ -22,10 +22,13 @@ describe("Calendar", function() {
     server = sinon.fakeServer.create();
 
     $('body').append('<div id="calendar"/>');
+
+    spyOn(Routes.prototype, 'setDefault');
+
     window.calendar = new Cal($('#calendar'));
+    window.calendar.application.setDate("2011-11");
 
     // Backbone.history.loadUrl();
-    window.calendar.application.setDate("2011-11");
 
     // populate appointments for this month
     server.respondWith('GET', /\/appointments/,

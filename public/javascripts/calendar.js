@@ -440,110 +440,6 @@ window.Cal = function(root_el) {
     };
   })();
 
-  var Routes = Backbone.Router.extend({
-    initialize: function(options) {
-      this.application = options.application;
-    },
-
-    routes: {
-      "": "setDefault",
-      "month/:date": "setMonth"
-    },
-
-    setDefault: function() {
-      console.log("[setDefault]");
-      var month = Helpers.to_iso8601(new Date).substr(0,7);
-      window.location = '/#month/' + month;
-    },
-
-    setMonth: function(date) {
-      console.log("[setMonth] %s", date);
-      this.application.setDate(date);
-    }
-  });
-
-  var Helpers = (function() {
-    function pad(n) {return n<10 ? '0'+n : n}
-
-    function to_iso8601(date) {
-      var year = date.getFullYear(),
-          month = date.getMonth() + 1,
-          day = date.getDate();
-
-      return year + '-' + pad(month) + '-' + pad(day);
-    }
-
-    function from_iso8601(date) {
-      var parts = date.split(/\D+/),
-          year = parseInt(parts[0]),
-          month = parseInt(parts[1], 10),
-          day = parseInt(parts[2] || 1, 10);
-
-      return new Date(year, month-1, day);
-    }
-
-    function firstOfTheMonth(date) {
-      var parts = date.split(/\D/),
-          year = parseInt(parts[0], 10),
-          month = parseInt(parts[1], 10) - 1;
-
-      return new Date(year, month, 1);
-    }
-
-    function previousMonth(month) {
-      var date = from_iso8601(month),
-          msInDay = 24*60*60*1000,
-          msThisMonth = date.getDate()*msInDay,
-          dateInPreviousMonth = new Date(date - msThisMonth - msInDay);
-
-      return to_iso8601(dateInPreviousMonth).substr(0,7);
-    }
-
-    function nextMonth(month) {
-      var date = from_iso8601(month),
-          msInDay = 24*60*60*1000,
-          msThisMonth = date.getDate()*msInDay,
-          dateInNextMonth = new Date(date - msThisMonth + 32*msInDay);
-
-      return to_iso8601(dateInNextMonth).substr(0,7);
-    }
-
-    function dayAfter(date) {
-      var plus1 = new Date(date.getTime() + 24*60*60*1000);
-
-      // Effing daylight savings time
-      if (plus1.getHours() === 23)
-        return new Date(plus1.getTime() + 60*60*1000);
-
-      if (plus1.getHours() === 1)
-        return new Date(plus1.getTime() - 60*60*1000);
-
-      return plus1;
-    }
-
-    function weekAfter(date) {
-      var plus7 = new Date(date.getTime() + 7*24*60*60*1000);
-
-      // Effing daylight savings time
-      if (plus7.getHours() === 23)
-        return new Date(plus7.getTime() + 60*60*1000);
-
-      if (plus7.getHours() === 1)
-        return new Date(plus7.getTime() - 60*60*1000);
-
-      return plus7;
-    }
-
-    return {
-      to_iso8601: to_iso8601,
-      previousMonth: previousMonth,
-      nextMonth: nextMonth,
-      dayAfter: dayAfter,
-      weekAfter: weekAfter,
-      firstOfTheMonth: firstOfTheMonth
-    };
-  })();
-
 
   // Initialize the app
   var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
@@ -553,12 +449,12 @@ window.Cal = function(root_el) {
         el: root_el
       });
 
-  // new Routes({application: application});
-  // try {
-  //   Backbone.history.start();
-  // } catch (x) {
-  //   console.log(x);
-  // }
+  routes = new Routes({application: application});
+  try {
+    Backbone.history.start();
+  } catch (x) {
+    console.log(x);
+  }
 
   return {
     Models: Models,
@@ -569,3 +465,108 @@ window.Cal = function(root_el) {
     application: application
   };
 };
+
+
+window.Routes = Backbone.Router.extend({
+  initialize: function(options) {
+    this.application = options.application;
+  },
+
+  routes: {
+    "": "setDefault",
+    "month/:date": "setMonth"
+  },
+
+  setDefault: function() {
+    console.log("[setDefault]");
+    var month = Helpers.to_iso8601(new Date).substr(0,7);
+    window.location = '/#month/' + month;
+  },
+
+  setMonth: function(date) {
+    console.log("[setMonth] %s", date);
+    this.application.setDate(date);
+  }
+});
+
+var Helpers = (function() {
+  function pad(n) {return n<10 ? '0'+n : n}
+
+  function to_iso8601(date) {
+    var year = date.getFullYear(),
+        month = date.getMonth() + 1,
+        day = date.getDate();
+
+    return year + '-' + pad(month) + '-' + pad(day);
+  }
+
+  function from_iso8601(date) {
+    var parts = date.split(/\D+/),
+        year = parseInt(parts[0]),
+        month = parseInt(parts[1], 10),
+        day = parseInt(parts[2] || 1, 10);
+
+    return new Date(year, month-1, day);
+  }
+
+  function firstOfTheMonth(date) {
+    var parts = date.split(/\D/),
+        year = parseInt(parts[0], 10),
+        month = parseInt(parts[1], 10) - 1;
+
+    return new Date(year, month, 1);
+  }
+
+  function previousMonth(month) {
+    var date = from_iso8601(month),
+        msInDay = 24*60*60*1000,
+        msThisMonth = date.getDate()*msInDay,
+        dateInPreviousMonth = new Date(date - msThisMonth - msInDay);
+
+    return to_iso8601(dateInPreviousMonth).substr(0,7);
+  }
+
+  function nextMonth(month) {
+    var date = from_iso8601(month),
+        msInDay = 24*60*60*1000,
+        msThisMonth = date.getDate()*msInDay,
+        dateInNextMonth = new Date(date - msThisMonth + 32*msInDay);
+
+    return to_iso8601(dateInNextMonth).substr(0,7);
+  }
+
+  function dayAfter(date) {
+    var plus1 = new Date(date.getTime() + 24*60*60*1000);
+
+    // Effing daylight savings time
+    if (plus1.getHours() === 23)
+      return new Date(plus1.getTime() + 60*60*1000);
+
+    if (plus1.getHours() === 1)
+      return new Date(plus1.getTime() - 60*60*1000);
+
+    return plus1;
+  }
+
+  function weekAfter(date) {
+    var plus7 = new Date(date.getTime() + 7*24*60*60*1000);
+
+    // Effing daylight savings time
+    if (plus7.getHours() === 23)
+      return new Date(plus7.getTime() + 60*60*1000);
+
+    if (plus7.getHours() === 1)
+      return new Date(plus7.getTime() - 60*60*1000);
+
+    return plus7;
+  }
+
+  return {
+    to_iso8601: to_iso8601,
+    previousMonth: previousMonth,
+    nextMonth: nextMonth,
+    dayAfter: dayAfter,
+    weekAfter: weekAfter,
+    firstOfTheMonth: firstOfTheMonth
+  };
+})();
