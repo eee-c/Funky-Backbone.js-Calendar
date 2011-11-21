@@ -451,25 +451,17 @@ window.Cal = function(root_el, options) {
     },
 
     setDefault: function() {
-      if (typeof(defaultRoute) == "undefined") {
-        return this.setDefaultProduction();
-      }
-      else {
+      if (typeof(defaultRoute) == "function") {
         return defaultRoute.call(this);
       }
 
-      // var env = (typeof('jasmine') == 'undefined') ? 'Production' : 'Test';
-      // return this['setDefault' + env]();
+      return this._setDefault();
     },
 
-    setDefaultProduction: function() {
+    _setDefault: function() {
       console.log("[setDefault]");
       var month = Helpers.to_iso8601(new Date).substr(0,7);
       window.location = '/#month/' + month;
-    },
-
-    setDefaultTest: function() {
-      console.log("[setDefaultTest]");
     },
 
     setMonth: function(date) {
