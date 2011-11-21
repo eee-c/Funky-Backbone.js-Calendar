@@ -1,4 +1,4 @@
-window.Cal = function(root_el) {
+window.Cal = function(root_el, options) {
   var Models = (function() {
     var Appointment = Backbone.Model.extend({
       urlRoot : '/appointments',
@@ -451,9 +451,25 @@ window.Cal = function(root_el) {
     },
 
     setDefault: function() {
+      if (typeof(defaultRoute) == "undefined") {
+        return this.setDefaultProduction();
+      }
+      else {
+        return defaultRoute.call(this);
+      }
+
+      // var env = (typeof('jasmine') == 'undefined') ? 'Production' : 'Test';
+      // return this['setDefault' + env]();
+    },
+
+    setDefaultProduction: function() {
       console.log("[setDefault]");
       var month = Helpers.to_iso8601(new Date).substr(0,7);
       window.location = '/#month/' + month;
+    },
+
+    setDefaultTest: function() {
+      console.log("[setDefaultTest]");
     },
 
     setMonth: function(date) {
@@ -545,6 +561,7 @@ window.Cal = function(root_el) {
   })();
 
 
+
   // Initialize the app
   var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
       appointments = new Collections.Appointments([], {date: year_and_month}),
@@ -553,12 +570,14 @@ window.Cal = function(root_el) {
         el: root_el
       });
 
-  // new Routes({application: application});
-  // try {
-  //   Backbone.history.start();
-  // } catch (x) {
-  //   console.log(x);
-  // }
+  var defaultRoute = (options || {}).defaultRoute;
+
+  new Routes({application: application});
+  try {
+    Backbone.history.start();
+  } catch (x) {
+    console.log(x);
+  }
 
   return {
     Models: Models,

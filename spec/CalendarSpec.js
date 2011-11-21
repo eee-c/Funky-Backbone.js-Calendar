@@ -22,7 +22,12 @@ describe("Calendar", function() {
     server = sinon.fakeServer.create();
 
     $('body').append('<div id="calendar"/>');
-    window.calendar = new Cal($('#calendar'));
+
+    window.calendar = new Cal($('#calendar'), {
+      defaultRoute: function() {
+        console.log("[defaultRoute] NOP");
+      }
+    });
 
     // Backbone.history.loadUrl();
     window.calendar.application.setDate("2011-11");
