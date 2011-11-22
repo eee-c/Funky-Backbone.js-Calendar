@@ -461,8 +461,7 @@ window.Cal = function(root_el, options) {
     _setDefault: function() {
       console.log("[setDefault]");
       var month = Helpers.to_iso8601(new Date).substr(0,7);
-      Backbone.history.navigate('#month/' + month);
-      this.setMonth(month);
+      Backbone.history.navigate('#month/' + month, true);
     },
 
     setMonth: function(date) {
