@@ -21,16 +21,11 @@ describe("Calendar", function() {
     // stub XHR requests with sinon.js
     server = sinon.fakeServer.create();
 
+    $('body').append('<h1>Funky Calendar<span class="year-and-month"/></h1>');
     $('body').append('<div id="calendar"/>');
 
-    window.calendar = new Cal($('#calendar'), {
-      defaultRoute: function() {
-        console.log("[defaultRoute] NOP");
-      }
-    });
-
-    // Backbone.history.loadUrl();
-    window.calendar.application.setDate("2011-11");
+    window.calendar = new Cal($('#calendar'));
+    Backbone.history.loadUrl();
 
     // populate appointments for this month
     server.respondWith('GET', /\/appointments/,
@@ -40,10 +35,14 @@ describe("Calendar", function() {
   });
 
   afterEach(function() {
+    $('h1').remove();
     $('#calendar').remove();
     $('#calendar-navigation').remove();
   });
 
+  afterEach(function() {
+    Backbone.history.navigate('');
+  });
 
   afterEach(function() {
     // allow normal XHR requests to work again
@@ -56,6 +55,35 @@ describe("Calendar", function() {
 
     $('#calendar-edit-appointment').dialog('close');
     $('#calendar-edit-appointment').remove();
+  });
+
+  describe("routing", function() {
+    beforeEach(function() {
+      var appointments = window.calendar.appointments;
+      Backbone.history.loadUrl();
+    });
+
+    it("defaults to the current month", function() {
+      var today = new Date()
+        , year = today.getFullYear()
+        , m = today.getMonth() + 1
+        , month = m<10 ? '0'+m : m;
+
+      expect(Backbone.history.getFragment())
+        .toEqual("month/" + year + "-" + month);
+    });
+
+    it("sets the date of the appointment collection", function() {
+      var appointments = window.calendar.appointments;
+      expect(appointments.getDate())
+         .toEqual("2011-11");
+    });
+  });
+
+  describe("the page title", function() {
+    it("contains the current month", function() {
+      expect($('h1')).toHaveText(/2011-11/);
+    });
   });
 
   describe("a collection of appointments", function() {
