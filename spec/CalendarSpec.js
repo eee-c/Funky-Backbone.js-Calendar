@@ -186,4 +186,23 @@ describe("Calendar", function() {
       });
     });
   });
+
+  describe("navigated view", function() {
+    beforeEach(function() {
+      window.calendar = new Cal($('#calendar'));
+      Backbone.history.navigate('#month/1999-12', true);
+
+      couch_doc['startDate'] = "1999-12-31";
+      couch_doc['title'] = "Party";
+
+      // populate appointments for this month
+      server.respondWith('GET', /\/appointments/,
+        [200, { "Content-Type": "application/json" }, JSON.stringify(doc_list)]);
+      server.respond();
+    });
+
+    it("should have an appointment", function() {
+       expect($('#calendar')).toHaveText(/Party/);
+    });
+  });
 });
