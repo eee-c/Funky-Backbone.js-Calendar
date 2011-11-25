@@ -1,4 +1,4 @@
-window.Cal = function(root_el, options) {
+window.Cal = function(root_el) {
   var Models = (function() {
     var Appointment = Backbone.Model.extend({
       urlRoot : '/appointments',
@@ -451,14 +451,6 @@ window.Cal = function(root_el, options) {
     },
 
     setDefault: function() {
-      if (typeof(defaultRoute) == "function") {
-        return defaultRoute.call(this);
-      }
-
-      return this._setDefault();
-    },
-
-    _setDefault: function() {
       console.log("[setDefault]");
       var month = Helpers.to_iso8601(new Date).substr(0,7);
       Backbone.history.navigate('#month/' + month, true);
@@ -562,8 +554,6 @@ window.Cal = function(root_el, options) {
         el: root_el
       });
 
-  var defaultRoute = (options || {}).defaultRoute;
-
   new Routes({application: application});
   try {
     Backbone.history.start();
@@ -576,7 +566,6 @@ window.Cal = function(root_el, options) {
     Collections: Collections,
     Views: Views,
     Helpers: Helpers,
-    appointments: appointments,
-    application: application
+    appointments: appointments
   };
 };
