@@ -29,7 +29,7 @@ window.Cal = function(root_el) {
     var Appointments = Backbone.Collection.extend({
       model: Models.Appointment,
       url: '/appointments',
-      initialize: function(options) {
+      initialize: function(models, options) {
         options || (options = {});
         this.date = options.date;
       },
@@ -44,6 +44,10 @@ window.Cal = function(root_el) {
         options.success = function (resp, status, xhr) {
           collection.trigger('calendar:change:date');
           if (success) success(collection, resp);
+        };
+        options.error = function () {
+          console.log("[fetch] Dang");
+          console.log(arguments);
         };
 
         return Backbone.Collection.prototype.fetch.call(this, options);
@@ -202,7 +206,12 @@ window.Cal = function(root_el) {
     });
 
     var AppointmentEdit = new (Backbone.View.extend({
-      el: $('#edit-dialog').parent(),
+      initialize: function() {
+        this.ensureDom();
+        this.activateDialog();
+        this.el = $(this.el).parent();
+        this.delegateEvents();
+      },
       reset: function(options) {
         this.model = options.model;
         this.render();
@@ -226,23 +235,59 @@ window.Cal = function(root_el) {
         $('.ok', this.el).click();
       },
       update: function() {
+        if (!this.model) return;
+
         var options = {
-          title: $('.title', '#edit-dialog').val(),
-          description: $('.description', '#edit-dialog').val()
+          title: $('.title', '#calendar-edit-appointment').val(),
+          description: $('.description', '#calendar-edit-appointment').val()
         };
         this.model.save(options);
+      },
+      ensureDom: function() {
+        if ($('#calendar-edit-appointment').length > 0) return;
+
+        $(this.el).attr('id', 'calendar-edit-appointment');
+        $(this.el).attr('title', 'Edit calendar appointment');
+
+        $(this.el).append(
+          '<h2 class="startDate"></h2>' +
+          '<p>Title</p>' +
+          '<p>' +
+            '<input class="title" type="text" name="title"/>' +
+          '</p>' +
+          '<p>Description</p>' +
+          '<p>' +
+            '<input class="description" type="text" name="description"/>' +
+          '</p>'
+        );
+      },
+      activateDialog: function() {
+        $(this.el).dialog({
+          autoOpen: false,
+          modal: true,
+          buttons: [
+            { text: "OK",
+              class: "ok",
+              click: function() { $(this).dialog("close"); } },
+            { text: "Cancel",
+              click: function() { $(this).dialog("close"); } } ]
+        });
       }
     }));
 
     var AppointmentAdd = new (Backbone.View.extend({
-      el: $("#add-dialog").parent(),
+      initialize: function() {
+        this.ensureDom();
+        this.activateDialog();
+        this.el = $(this.el).parent();
+        this.delegateEvents();
+      },
       reset: function(options) {
         this.startDate = options.startDate;
         this.render();
       },
       render: function () {
         $('.ui-dialog-content', this.el).dialog('open');
-
         $('.startDate', this.el).html(this.startDate);
         $('.title', this.el).val("");
         $('.description', this.el).val("");
@@ -260,6 +305,35 @@ window.Cal = function(root_el) {
           title: this.el.find('input.title').val(),
           description: this.el.find('input.description').val(),
           startDate: this.el.find('.startDate').html()
+        });
+      },
+      ensureDom: function() {
+        if ($('#calendar-add-appointment').length > 0) return;
+
+        $(this.el).attr('id', 'calendar-add-appointment');
+        $(this.el).attr('title', 'Add calendar appointment');
+
+        $(this.el).append(this.make('h2', {'class': 'startDate'}));
+        $(this.el).append(this.make('p', {}, 'Title'));
+        $(this.el).append(this.make('p', {},
+          this.make('input', {'type': "text", 'name': "title", 'class': "title"})
+        ));
+
+        $(this.el).append(this.make('p', {}, 'Description'));
+        $(this.el).append(this.make('p', {},
+          this.make('input', {'type': "text", 'name': "description", 'class': "description"})
+        ));
+      },
+      activateDialog: function() {
+        $(this.el).dialog({
+          autoOpen: false,
+          modal: true,
+          buttons: [
+            { text: "OK",
+              class: "ok",
+              click: function() { $(this).dialog("close"); } },
+            { text: "Cancel",
+              click: function() { $(this).dialog("close"); } } ]
         });
       }
     }));
@@ -379,7 +453,7 @@ window.Cal = function(root_el) {
     setDefault: function() {
       console.log("[setDefault]");
       var month = Helpers.to_iso8601(new Date).substr(0,7);
-      window.location = '/#month/' + month;
+      Backbone.history.navigate('#month/' + month, true);
     },
 
     setMonth: function(date) {
@@ -471,16 +545,21 @@ window.Cal = function(root_el) {
   })();
 
 
+
   // Initialize the app
   var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
-      appointments = new Collections.Appointments({date: year_and_month}),
+      appointments = new Collections.Appointments([], {date: year_and_month}),
       application = new Views.Application({
         collection: appointments,
         el: root_el
       });
 
   new Routes({application: application});
-  Backbone.history.start();
+  try {
+    Backbone.history.start();
+  } catch (x) {
+    console.log(x);
+  }
 
   return {
     Models: Models,
