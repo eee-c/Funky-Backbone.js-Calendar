@@ -1,4 +1,11 @@
-window.Cal = function(root_el) {
+define(['jquery',
+        'underscore',
+        'backbone',
+        'jquery-ui'],
+  function($, _, Backbone, jqueryUi) {
+    console.log(Backbone);
+    return function(root_el) {
+
   var Models = (function() {
     var Appointment = Backbone.Model.extend({
       urlRoot : '/appointments',
@@ -569,3 +576,5 @@ window.Cal = function(root_el) {
     appointments: appointments
   };
 };
+  }
+);
