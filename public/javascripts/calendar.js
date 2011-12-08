@@ -1,40 +1,14 @@
 define(['jquery',
         'underscore',
         'backbone',
+        'calendar/models/appointment',
         'jquery-ui'],
-  function($, _, Backbone, jqueryUi) {
-    console.log(Backbone);
+  function($, _, Backbone, Appointment) {
     return function(root_el) {
-
-  var Models = (function() {
-    var Appointment = Backbone.Model.extend({
-      urlRoot : '/appointments',
-      initialize: function(attributes) {
-        if (!this.id)
-          this.id = attributes['_id'];
-      },
-      save: function(attributes, options) {
-        options || (options = {});
-        options['headers'] = {'If-Match': this.get("rev")};
-        Backbone.Model.prototype.save.call(this, attributes, options);
-      },
-      destroy: function() {
-        Backbone.Model.prototype.destroy.call(this, {
-          headers: {'If-Match': this.get("rev")}
-        });
-      },
-      get: function(attribute) {
-        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
-               Backbone.Model.prototype.get.call(this, attribute);
-      }
-    });
-
-    return {Appointment: Appointment};
-  })();
 
   var Collections = (function() {
     var Appointments = Backbone.Collection.extend({
-      model: Models.Appointment,
+      model: Appointment,
       url: '/appointments',
       initialize: function(models, options) {
         options || (options = {});
@@ -569,7 +543,6 @@ define(['jquery',
   }
 
   return {
-    Models: Models,
     Collections: Collections,
     Views: Views,
     Helpers: Helpers,
