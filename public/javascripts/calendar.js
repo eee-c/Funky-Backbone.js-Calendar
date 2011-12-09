@@ -2,148 +2,13 @@ define(['jquery',
         'underscore',
         'backbone',
         'calendar/collections/appointments',
+        'calendar/views/Appointment',
+        'calendar/views/CalendarMonth',
         'jquery-ui'],
-  function($, _, Backbone, Appointments) {
+  function($, _, Backbone, Appointments, Appointment, CalendarMonth) {
     return function(root_el) {
 
   var Views = (function() {
-    var Appointment = Backbone.View.extend({
-      template: template(
-        '<span class="appointment" title="{{ description }}">' +
-        '  <span class="title">{{title}}</span>' +
-        '  <span class="delete">X</span>' +
-        '</span>'
-      ),
-      initialize: function(options) {
-        this.container = $('#' + this.model.get('startDate'));
-        options.model.bind('destroy', this.remove, this);
-        options.model.bind('error', this.deleteError, this);
-        options.model.bind('change', this.render, this);
-      },
-      render: function() {
-        $(this.el).html(this.template(this.model.toJSON()));
-        this.container.append($(this.el));
-        return this;
-      },
-      events: {
-        'click .title': 'handleEdit',
-        'click .delete': 'handleDelete'
-      },
-      handleDelete: function(e) {
-        console.log("deleteClick");
-
-        this.model.destroy();
-        return false;
-      },
-      handleEdit: function(e) {
-        console.log("editClick");
-
-        AppointmentEdit.reset({model: this.model});
-        return false;
-      },
-      deleteError: function(model, error) {
-        // TODO: blame the user instead of the programmer...
-        if (error.status == 409) {
-          alert("This site does not understand CouchDB revisions.");
-        }
-        else {
-          alert("This site was made by an idiot.");
-        }
-      },
-      remove: function() {
-        $(this.el).remove();
-      }
-    });
-
-    var CalendarMonth = Backbone.View.extend({
-      tagName: 'table',
-      initialize: function(options) {
-        this.date = options.date;
-      },
-      render: function() {
-        // TODO:
-        // $('span.year-and-month', 'h1').html(' (' + this.date + ')');
-
-        var header = new CalendarMonthHeader();
-        header.render();
-        $(this.el).append(header.el);
-
-        var body = new CalendarMonthBody({date: this.date});
-        body.render();
-        $(this.el).append(body.el);
-
-        return this;
-      }
-    });
-
-    var CalendarMonthHeader = Backbone.View.extend({
-      tagName: 'tr',
-      render: function() {
-        $(this.el).html('<th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th>');
-      }
-    });
-
-    var CalendarMonthBody = Backbone.View.extend({
-      initialize: function(options) {
-        this.date = options.date;
-        this.el = [];
-      },
-      render: function() {
-        var firstOfTheMonth = Helpers.firstOfTheMonth(this.date),
-            month = firstOfTheMonth.getMonth(),
-            firstSunday = new Date(firstOfTheMonth.getTime() -
-                            firstOfTheMonth.getDay()*24*60*60*1000);
-
-        var date = firstSunday;
-        while (Helpers.to_iso8601(date).substr(0,7) <= this.date) {
-          var week = new CalendarMonthWeek({date: date});
-          week.render();
-          this.el.push(week.el);
-
-          date = Helpers.weekAfter(date);
-        }
-      }
-    });
-
-    var CalendarMonthWeek = Backbone.View.extend({
-      tagName: 'tr',
-      initialize: function(options) {
-        this.date = options.date;
-      },
-      render: function() {
-        var date = this.date;
-        for (var i=0; i<7; i++) {
-          var day = new CalendarMonthDay({date: date});
-          day.render();
-          $(this.el).append(day.el);
-
-          date = Helpers.dayAfter(date);
-        }
-      }
-    });
-
-    var CalendarMonthDay = Backbone.View.extend({
-      tagName: 'td',
-      initialize: function(options) {
-        this.date = options.date;
-      },
-      render: function() {
-        this.el.id = Helpers.to_iso8601(this.date);
-        var html = '<span class="day-of-month">' + this.date.getDate() + '</span>';
-        $(this.el).html(html);
-
-        return this;
-      },
-      events : {
-        'click': 'addClick'
-      },
-      addClick: function(e) {
-        console.log("addClick");
-
-        AppointmentAdd.reset({startDate: this.el.id});
-      }
-    });
-
     var AppointmentEdit = new (Backbone.View.extend({
       initialize: function() {
         this.ensureDom();
@@ -421,14 +286,6 @@ define(['jquery',
       return new Date(year, month-1, day);
     }
 
-    function firstOfTheMonth(date) {
-      var parts = date.split(/\D/),
-          year = parseInt(parts[0], 10),
-          month = parseInt(parts[1], 10) - 1;
-
-      return new Date(year, month, 1);
-    }
-
     function previousMonth(month) {
       var date = from_iso8601(month),
           msInDay = 24*60*60*1000,
@@ -447,42 +304,12 @@ define(['jquery',
       return to_iso8601(dateInNextMonth).substr(0,7);
     }
 
-    function dayAfter(date) {
-      var plus1 = new Date(date.getTime() + 24*60*60*1000);
-
-      // Effing daylight savings time
-      if (plus1.getHours() === 23)
-        return new Date(plus1.getTime() + 60*60*1000);
-
-      if (plus1.getHours() === 1)
-        return new Date(plus1.getTime() - 60*60*1000);
-
-      return plus1;
-    }
-
-    function weekAfter(date) {
-      var plus7 = new Date(date.getTime() + 7*24*60*60*1000);
-
-      // Effing daylight savings time
-      if (plus7.getHours() === 23)
-        return new Date(plus7.getTime() + 60*60*1000);
-
-      if (plus7.getHours() === 1)
-        return new Date(plus7.getTime() - 60*60*1000);
-
-      return plus7;
-    }
-
     return {
       to_iso8601: to_iso8601,
       previousMonth: previousMonth,
-      nextMonth: nextMonth,
-      dayAfter: dayAfter,
-      weekAfter: weekAfter,
-      firstOfTheMonth: firstOfTheMonth
+      nextMonth: nextMonth
     };
   })();
-
 
 
   // Initialize the app
