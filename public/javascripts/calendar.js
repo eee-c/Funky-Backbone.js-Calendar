@@ -5,8 +5,9 @@ define(['jquery',
         'calendar/views/Appointment',
         'calendar/views/CalendarMonth',
         'calendar/views/CalendarNavigation',
+        'calendar/views/TitleView',
         'jquery-ui'],
-  function($, _, Backbone, Appointments, Appointment, CalendarMonth, CalendarNavigation) {
+  function($, _, Backbone, Appointments, Appointment, CalendarMonth, CalendarNavigation, TitleView) {
     return function(root_el) {
 
   var Views = (function() {
@@ -155,19 +156,6 @@ define(['jquery',
 
       return t;
     }
-
-    var TitleView = Backbone.View.extend({
-      tagName: 'span',
-      initialize: function(options) {
-        options.collection.bind('calendar:change:date', this.render, this);
-
-        $('span.year-and-month', 'h1').
-          replaceWith(this.el);
-      },
-      render: function() {
-        $(this.el).html(' (' + this.collection.getDate() + ') ');
-      }
-    });
 
     var Application = Backbone.View.extend({
       initialize: function(options) {
