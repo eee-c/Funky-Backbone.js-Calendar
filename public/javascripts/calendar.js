@@ -4,8 +4,9 @@ define(['jquery',
         'calendar/collections/appointments',
         'calendar/views/Appointment',
         'calendar/views/CalendarMonth',
+        'calendar/views/CalendarNavigation',
         'jquery-ui'],
-  function($, _, Backbone, Appointments, Appointment, CalendarMonth) {
+  function($, _, Backbone, Appointments, Appointment, CalendarMonth, CalendarNavigation) {
     return function(root_el) {
 
   var Views = (function() {
@@ -142,29 +143,6 @@ define(['jquery',
       }
     }));
 
-    var CalendarNavigation = Backbone.View.extend({
-      initialize: function(options) {
-        options.collection.bind('calendar:change:date', this.render, this);
-      },
-      template: template(
-        '<div class="previous">' +
-          '<a href="#month/{{ previous_date }}">previous</a>' +
-        '</div>' +
-        '<div class="next">' +
-          '<a href="#month/{{ next_date }}">next</a>' +
-        '</div>'
-      ),
-      render: function() {
-        var date = this.collection.getDate();
-        $(this.el).html(this.template({
-          previous_date: Helpers.previousMonth(date),
-          next_date: Helpers.nextMonth(date)
-        }));
-
-        return this;
-      }
-    });
-
     function template(str) {
       var orig_settings = _.templateSettings;
       _.templateSettings = {
@@ -277,37 +255,8 @@ define(['jquery',
       return year + '-' + pad(month) + '-' + pad(day);
     }
 
-    function from_iso8601(date) {
-      var parts = date.split(/\D+/),
-          year = parseInt(parts[0]),
-          month = parseInt(parts[1], 10),
-          day = parseInt(parts[2] || 1, 10);
-
-      return new Date(year, month-1, day);
-    }
-
-    function previousMonth(month) {
-      var date = from_iso8601(month),
-          msInDay = 24*60*60*1000,
-          msThisMonth = date.getDate()*msInDay,
-          dateInPreviousMonth = new Date(date - msThisMonth - msInDay);
-
-      return to_iso8601(dateInPreviousMonth).substr(0,7);
-    }
-
-    function nextMonth(month) {
-      var date = from_iso8601(month),
-          msInDay = 24*60*60*1000,
-          msThisMonth = date.getDate()*msInDay,
-          dateInNextMonth = new Date(date - msThisMonth + 32*msInDay);
-
-      return to_iso8601(dateInNextMonth).substr(0,7);
-    }
-
     return {
-      to_iso8601: to_iso8601,
-      previousMonth: previousMonth,
-      nextMonth: nextMonth
+      to_iso8601: to_iso8601
     };
   })();
 
