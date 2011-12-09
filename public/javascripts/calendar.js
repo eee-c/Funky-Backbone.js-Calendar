@@ -144,19 +144,6 @@ define(['jquery',
       }
     }));
 
-    function template(str) {
-      var orig_settings = _.templateSettings;
-      _.templateSettings = {
-        interpolate : /\{\{([\s\S]+?)\}\}/g
-      };
-
-      var t = _.template(str);
-
-      _.templateSettings = orig_settings;
-
-      return t;
-    }
-
     var Application = Backbone.View.extend({
       initialize: function(options) {
         this.collection = appointment_collection = options.collection;
