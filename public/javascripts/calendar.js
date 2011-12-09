@@ -6,8 +6,9 @@ define(['jquery',
         'calendar/views/CalendarMonth',
         'calendar/views/CalendarNavigation',
         'calendar/views/TitleView',
+        'calendar/helpers/to_iso8601',
         'jquery-ui'],
-  function($, _, Backbone, Appointments, Appointment, CalendarMonth, CalendarNavigation, TitleView) {
+  function($, _, Backbone, Appointments, Appointment, CalendarMonth, CalendarNavigation, TitleView, to_iso8601) {
     return function(root_el) {
 
   var Views = (function() {
@@ -209,7 +210,7 @@ define(['jquery',
 
     setDefault: function() {
       console.log("[setDefault]");
-      var month = Helpers.to_iso8601(new Date).substr(0,7);
+      var month = to_iso8601(new Date).substr(0,7);
       Backbone.history.navigate('#month/' + month, true);
     },
 
@@ -219,25 +220,8 @@ define(['jquery',
     }
   });
 
-  var Helpers = (function() {
-    function pad(n) {return n<10 ? '0'+n : n}
-
-    function to_iso8601(date) {
-      var year = date.getFullYear(),
-          month = date.getMonth() + 1,
-          day = date.getDate();
-
-      return year + '-' + pad(month) + '-' + pad(day);
-    }
-
-    return {
-      to_iso8601: to_iso8601
-    };
-  })();
-
-
   // Initialize the app
-  var year_and_month = Helpers.to_iso8601(new Date()).substr(0,7),
+  var year_and_month = to_iso8601(new Date()).substr(0,7),
       appointments = new Appointments([], {date: year_and_month}),
       application = new Views.Application({
         collection: appointments,
@@ -253,7 +237,6 @@ define(['jquery',
 
   return {
     Views: Views,
-    Helpers: Helpers,
     appointments: appointments
   };
 };
