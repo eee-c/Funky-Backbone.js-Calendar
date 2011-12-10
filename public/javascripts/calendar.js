@@ -1,11 +1,14 @@
-define(['jquery',
-        'underscore',
-        'backbone',
-        'calendar/collections/appointments',
-        'calendar/views/Application',
-        'calendar/helpers/to_iso8601',
-        'jquery-ui'],
-function($, _, Backbone, Appointments, Application, to_iso8601) {
+define(function(require) {
+  var $ = require('jquery')
+    , _ = require('underscore')
+    , Backbone = require('backbone')
+    , Router = require('calendar/router')
+    , Appointments = require('calendar/collections/appointments')
+    , Application = require('calendar/views/Application')
+    , to_iso8601 = require('calendar/helpers/to_iso8601');
+
+  require('jquery-ui');
+
   return function(root_el) {
     var Views = (function() {
       var AppointmentEdit = new (Backbone.View.extend({
@@ -142,28 +145,6 @@ function($, _, Backbone, Appointments, Application, to_iso8601) {
       }));
     })();
 
-    var Routes = Backbone.Router.extend({
-      initialize: function(options) {
-        this.application = options.application;
-      },
-
-      routes: {
-        "": "setDefault",
-        "month/:date": "setMonth"
-      },
-
-      setDefault: function() {
-        console.log("[setDefault]");
-        var month = to_iso8601(new Date).substr(0,7);
-        Backbone.history.navigate('#month/' + month, true);
-      },
-
-      setMonth: function(date) {
-        console.log("[setMonth] %s", date);
-        this.application.setDate(date);
-      }
-    });
-
     // Initialize the app
     var year_and_month = to_iso8601(new Date()).substr(0,7),
         appointments = new Appointments([], {date: year_and_month}),
@@ -172,7 +153,7 @@ function($, _, Backbone, Appointments, Application, to_iso8601) {
           el: root_el
         });
 
-    new Routes({application: application});
+    new Router({application: application});
     try {
       Backbone.history.start();
     } catch (x) {
@@ -180,7 +161,7 @@ function($, _, Backbone, Appointments, Application, to_iso8601) {
     }
 
     return {
-      Views: Views,
+      application: application,
       appointments: appointments
     };
   };
