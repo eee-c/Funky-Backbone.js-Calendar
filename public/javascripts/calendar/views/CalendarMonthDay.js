@@ -1,7 +1,9 @@
-define(['backbone',
-        'underscore',
-        'calendar/helpers/to_iso8601'],
-function(Backbone, _, to_iso8601) {
+define(function(require) {
+  var Backbone = require('backbone')
+    , _ = require('underscore')
+    , to_iso8601 = require('calendar/helpers/to_iso8601')
+    , AppointmentAdd = require('calendar/views/AppointmentAdd');
+
   return Backbone.View.extend({
     tagName: 'td',
     initialize: function(options) {

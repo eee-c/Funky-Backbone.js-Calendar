@@ -1,5 +1,9 @@
-define(['backbone', 'underscore', 'calendar/helpers/template'],
-function(Backbone, _, template) {
+define(function(require) {
+  var Backbone = require('backbone')
+    , _ = require('underscore')
+    , template = require('calendar/helpers/template')
+    , AppointmentEdit = require('calendar/views/AppointmentEdit');
+
   return Backbone.View.extend({
     template: template(
       '<span class="appointment" title="{{ description }}">' +
