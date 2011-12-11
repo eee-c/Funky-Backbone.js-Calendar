@@ -24,35 +24,34 @@
   <script type="text/javascript" src="CalendarSpec.js"></script>
 
   <!-- include source files here... -->
-  <script type="text/javascript" src="../public/javascripts/calendar.js"></script>
-
+  <!-- script type="text/javascript" src="../public/javascripts/calendar.js"></script -->
+  <script type="text/javascript" src="../public/javascripts/require.js"></script>
   <script type="text/javascript">
-    (function() {
-      var jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1000;
+require.config({
+  baseUrl: '../public/javascripts',
+  paths: {
+    'jquery': 'jquery.min',
+    'jquery-ui': 'jquery-ui.min'
+  }
+});
 
-      var trivialReporter = new jasmine.TrivialReporter();
+require(['calendar', 'backbone'], function(Calendar, Backbone){
+  window.Cal = Calendar;
+  window.Backbone = Backbone;
 
-      jasmineEnv.addReporter(trivialReporter);
+  var jasmineEnv = jasmine.getEnv();
+  jasmineEnv.updateInterval = 1000;
 
-      jasmineEnv.specFilter = function(spec) {
-        return trivialReporter.specFilter(spec);
-      };
+  var trivialReporter = new jasmine.TrivialReporter();
 
-      var currentWindowOnload = window.onload;
+  jasmineEnv.addReporter(trivialReporter);
 
-      window.onload = function() {
-        if (currentWindowOnload) {
-          currentWindowOnload();
-        }
-        execJasmine();
-      };
+  jasmineEnv.specFilter = function(spec) {
+    return trivialReporter.specFilter(spec);
+  };
 
-      function execJasmine() {
-        jasmineEnv.execute();
-      }
-
-    })();
+  jasmineEnv.execute();
+});
   </script>
 
 </head>
