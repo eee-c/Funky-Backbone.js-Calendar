@@ -42,10 +42,10 @@ describe("Calendar", function() {
 
   afterEach(function() {
     $('#calendar-add-appointment').dialog('close');
-    $('#calendar-add-appointment').remove();
+    // $('#calendar-add-appointment').remove();
 
     $('#calendar-edit-appointment').dialog('close');
-    $('#calendar-edit-appointment').remove();
+    // $('#calendar-edit-appointment').remove();
   });
 
   describe("routing", function() {
