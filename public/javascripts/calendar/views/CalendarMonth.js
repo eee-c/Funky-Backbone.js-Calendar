@@ -9,15 +9,15 @@ function(Backbone, $, CalendarMonthHeader, CalendarMonthBody) {
       this.date = options.date;
     },
     render: function() {
-      // TODO:
-      // $('span.year-and-month', 'h1').html(' (' + this.date + ')');
-
       var header = new CalendarMonthHeader();
       header.render();
       $(this.el).append(header.el);
 
-      var body = new CalendarMonthBody({date: this.date});
-      body.render();
+      var body = new CalendarMonthBody({
+        date: this.date,
+        collection: this.collection
+      }).render();
+
       $(this.el).append(body.el);
 
       return this;

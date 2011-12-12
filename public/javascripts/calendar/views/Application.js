@@ -21,7 +21,10 @@ function(Backbone, $, _, TitleView, CalendarNavigation, CalendarMonth, Appointme
     render: function() {
       var date = this.collection.getDate();
 
-      var month = new CalendarMonth({date: date});
+      var month = new CalendarMonth({
+        date: date,
+        collection: this.collection
+      });
 
       $(this.el).html(month.render().el);
     },

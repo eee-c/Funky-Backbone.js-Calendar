@@ -18,12 +18,17 @@ function(Backbone, _, CalendarMonthWeek, firstOfTheMonth, to_iso8601, weekAfter)
 
       var date = firstSunday;
       while (to_iso8601(date).substr(0,7) <= this.date) {
-        var week = new CalendarMonthWeek({date: date});
-        week.render();
+        var week = new CalendarMonthWeek({
+          date: date,
+          collection: this.collection
+        }).render();
+
         this.el.push(week.el);
 
         date = weekAfter(date);
       }
+
+      return this;
     }
   });
 });

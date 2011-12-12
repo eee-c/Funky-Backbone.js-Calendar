@@ -11,12 +11,17 @@ function(Backbone, _, CalendarMonthDay, dayAfter) {
     render: function() {
       var date = this.date;
       for (var i=0; i<7; i++) {
-        var day = new CalendarMonthDay({date: date});
-        day.render();
+        var day = new CalendarMonthDay({
+          date: date,
+          collection: this.collection
+        }).render();
+
         $(this.el).append(day.el);
 
         date = dayAfter(date);
       }
+
+      return this;
     }
   });
 });

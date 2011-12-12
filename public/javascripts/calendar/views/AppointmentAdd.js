@@ -10,6 +10,7 @@ define(function(require) {
       this.delegateEvents();
     },
     reset: function(options) {
+      this.collection = options.collection;
       this.startDate = options.startDate;
       this.render();
     },
@@ -28,7 +29,7 @@ define(function(require) {
       $('.ok', this.el).click();
     },
     create: function() {
-      appointment_collection.create({
+      this.collection.create({
         title: this.el.find('input.title').val(),
         description: this.el.find('input.description').val(),
         startDate: this.el.find('.startDate').html()

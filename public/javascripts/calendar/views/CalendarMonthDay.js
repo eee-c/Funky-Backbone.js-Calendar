@@ -22,7 +22,10 @@ define(function(require) {
     addClick: function(e) {
       console.log("addClick");
 
-      AppointmentAdd.reset({startDate: this.el.id});
+      AppointmentAdd.reset({
+        startDate: this.el.id,
+        collection: this.collection
+      });
     }
   });
 });
