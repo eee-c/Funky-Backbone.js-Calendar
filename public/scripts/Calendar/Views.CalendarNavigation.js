@@ -1,8 +1,17 @@
 define(function(require) {
  var Backbone = require('backbone')
    , to_iso8601 = require('Calendar/Helpers.to_iso8601')
-   , from_iso8601 = require('Calendar/Helpers.from_iso8601')
    , template = require('Calendar/Helpers.template');
+
+  function from_iso8601(date) {
+    var parts = date.split(/\D+/),
+        year = parseInt(parts[0]),
+        month = parseInt(parts[1], 10),
+        day = parseInt(parts[2] || 1, 10);
+
+    return new Date(year, month-1, day);
+  };
+
 
   function previousMonth(month) {
     var date = from_iso8601(month),
