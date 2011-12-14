@@ -2,10 +2,10 @@ define(function(require) {
   var $ = require('jquery')
     , _ = require('underscore')
     , Backbone = require('backbone')
-    , Router = require('calendar/router')
-    , Appointments = require('calendar/collections/appointments')
-    , Application = require('calendar/views/Application')
-    , to_iso8601 = require('calendar/helpers/to_iso8601');
+    , Router = require('Calendar/router')
+    , Appointments = require('Calendar/Collections.Appointments')
+    , Application = require('Calendar/Views.Application')
+    , to_iso8601 = require('Calendar/Helpers.to_iso8601');
 
   require('jquery-ui');
 
