@@ -1,8 +1,8 @@
 define(function(require) {
   var Backbone = require('backbone')
     , _ = require('underscore')
-    , to_iso8601 = require('calendar/helpers/to_iso8601')
-    , AppointmentAdd = require('calendar/views/AppointmentAdd');
+    , to_iso8601 = require('Calendar/Helpers.to_iso8601')
+    , AppointmentAdd = require('Calendar/Views.AppointmentAdd');
 
   return Backbone.View.extend({
     tagName: 'td',

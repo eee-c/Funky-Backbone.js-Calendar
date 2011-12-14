@@ -1,8 +1,9 @@
-define(['backbone',
-        'jquery',
-        'calendar/views/CalendarMonthHeader',
-        'calendar/views/CalendarMonthBody'],
-function(Backbone, $, CalendarMonthHeader, CalendarMonthBody) {
+define(function(require) {
+ var Backbone = require('backbone')
+   , $ = require('jquery')
+   , CalendarMonthHeader = require('Calendar/Views.CalendarMonthHeader')
+   , CalendarMonthBody = require('Calendar/Views.CalendarMonthBody');
+
   return Backbone.View.extend({
     tagName: 'table',
     initialize: function(options) {

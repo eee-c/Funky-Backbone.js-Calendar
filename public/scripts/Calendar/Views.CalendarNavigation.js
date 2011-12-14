@@ -1,8 +1,9 @@
-define(['backbone',
-        'calendar/helpers/to_iso8601',
-        'calendar/helpers/from_iso8601',
-        'calendar/helpers/template'],
-function(Backbone, to_iso8601, from_iso8601, template) {
+define(function(require) {
+ var Backbone = require('backbone')
+   , to_iso8601 = require('Calendar/Helpers.to_iso8601')
+   , from_iso8601 = require('Calendar/Helpers.from_iso8601')
+   , template = require('Calendar/Helpers.template');
+
   function previousMonth(month) {
     var date = from_iso8601(month),
         msInDay = 24*60*60*1000,

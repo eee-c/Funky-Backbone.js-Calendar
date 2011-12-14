@@ -1,4 +1,7 @@
-define(['backbone', 'underscore'], function(Backbone, _) {
+define(function(require) {
+  var Backbone = require('backbone')
+    , _ = require('underscore');
+
   return Backbone.Model.extend({
     urlRoot : '/appointments',
     initialize: function(attributes) {

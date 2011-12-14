@@ -1,4 +1,7 @@
-define(['backbone', 'jquery'], function(Backbone, $) {
+define(function(require) {
+  var Backbone = require('backbone')
+    , $ = require('jquery');
+
   return Backbone.View.extend({
     tagName: 'span',
     initialize: function(options) {

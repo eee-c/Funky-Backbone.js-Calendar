@@ -1,6 +1,6 @@
 define(function(require) {
   var Backbone = require('backbone')
-    , to_iso8601 = require('calendar/helpers/to_iso8601');
+    , to_iso8601 = require('Calendar/Helpers.to_iso8601');
 
   return Backbone.Router.extend({
     initialize: function(options) {

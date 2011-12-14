@@ -1,5 +1,8 @@
-define(['backbone', 'underscore', 'calendar/models/appointment'],
-       function(Backbone, _, Appointment) {
+define(function(require) {
+  var Backbone = require('backbone')
+    , _ = require('underscore')
+    , Appointment = require('Calendar/Models.Appointment');
+
   return Backbone.Collection.extend({
     model: Appointment,
     url: '/appointments',

@@ -1,11 +1,12 @@
-define(['backbone',
-        'jquery',
-        'underscore',
-        'calendar/views/TitleView',
-        'calendar/views/CalendarNavigation',
-        'calendar/views/CalendarMonth',
-        'calendar/views/Appointment'],
-function(Backbone, $, _, TitleView, CalendarNavigation, CalendarMonth, Appointment) {
+define(function(require) {
+  var Backbone = require('backbone')
+    , $ = require('jquery')
+    , _ = require('underscore')
+    , TitleView = require('Calendar/Views.TitleView')
+    , CalendarNavigation = require('Calendar/Views.CalendarNavigation')
+    , CalendarMonth = require('Calendar/Views.CalendarMonth')
+    , Appointment = require('Calendar/Views.Appointment');
+
   return Backbone.View.extend({
     initialize: function(options) {
       this.render();

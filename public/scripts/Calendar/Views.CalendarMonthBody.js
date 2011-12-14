@@ -1,10 +1,11 @@
-define(['backbone',
-        'underscore',
-        'calendar/views/CalendarMonthWeek',
-        'calendar/helpers/firstOfTheMonth',
-        'calendar/helpers/to_iso8601',
-        'calendar/helpers/weekAfter'],
-function(Backbone, _, CalendarMonthWeek, firstOfTheMonth, to_iso8601, weekAfter) {
+define(function(require) {
+ var Backbone = require('backbone')
+   , _ = require('underscore')
+   , CalendarMonthWeek = require('Calendar/Views.CalendarMonthWeek')
+   , firstOfTheMonth = require('Calendar/Helpers.firstOfTheMonth')
+   , to_iso8601 = require('Calendar/Helpers.to_iso8601')
+   , weekAfter = require('Calendar/Helpers.weekAfter');
+
   return Backbone.View.extend({
     initialize: function(options) {
       this.date = options.date;

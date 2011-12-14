@@ -1,8 +1,9 @@
-define(['backbone',
-        'underscore',
-        'calendar/views/CalendarMonthDay',
-        'calendar/helpers/dayAfter'],
-function(Backbone, _, CalendarMonthDay, dayAfter) {
+define(function(require) {
+ var Backbone = require('backbone')
+   , _ = require('underscore')
+   , CalendarMonthDay = require('Calendar/Views.CalendarMonthDay')
+   , dayAfter = require('Calendar/Helpers.dayAfter');
+
   return Backbone.View.extend({
     tagName: 'tr',
     initialize: function(options) {

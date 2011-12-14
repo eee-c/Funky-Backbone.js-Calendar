@@ -1,4 +1,6 @@
-define(['underscore'], function(_) {
+define(function(require) {
+  var _ = require('underscore');
+
   return function(str) {
     var orig_settings = _.templateSettings;
     _.templateSettings = {

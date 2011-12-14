@@ -2,7 +2,7 @@ define(function(require) {
   var $ = require('jquery')
     , _ = require('underscore')
     , Backbone = require('backbone')
-    , Router = require('Calendar/router')
+    , Router = require('Calendar/Router')
     , Appointments = require('Calendar/Collections.Appointments')
     , Application = require('Calendar/Views.Application')
     , to_iso8601 = require('Calendar/Helpers.to_iso8601');
