@@ -5,6 +5,6 @@ require.config({
   }
 });
 
-require(['calendar'], function(Calendar){
+require(['Calendar'], function(Calendar){
   var calendar = new Calendar($('#calendar'));
 });
