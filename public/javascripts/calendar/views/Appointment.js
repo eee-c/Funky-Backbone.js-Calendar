@@ -1,13 +1,16 @@
 define(function(require) {
   var Backbone = require('backbone')
     , _ = require('underscore')
-    , mustache_templater = require('calendar/helpers/template')
-    , html_template = require('text!calendar/views/Appointment.html')
-    , template = mustache_templater(html_template)
+    , template = require('calendar/helpers/template')
     , AppointmentEdit = require('calendar/views/AppointmentEdit');
 
   return Backbone.View.extend({
-    template: template,
+    template: template(
+      '<span class="appointment" title="{{ description }}">' +
+      '  <span class="title">{{title}}</span>' +
+      '  <span class="delete">X</span>' +
+      '</span>'
+    ),
     initialize: function(options) {
       this.container = $('#' + this.model.get('startDate'));
       options.model.bind('destroy', this.remove, this);
