@@ -1,8 +1,20 @@
 define(function(require) {
  var Backbone = require('backbone')
    , _ = require('underscore')
-   , CalendarMonthDay = require('Calendar/Views.CalendarMonthDay')
-   , dayAfter = require('Calendar/Helpers.dayAfter');
+   , CalendarMonthDay = require('Calendar/Views.CalendarMonthDay');
+
+  function dayAfter(date) {
+    var plus1 = new Date(date.getTime() + 24*60*60*1000);
+
+    // Effing daylight savings time
+    if (plus1.getHours() === 23)
+      return new Date(plus1.getTime() + 60*60*1000);
+
+    if (plus1.getHours() === 1)
+      return new Date(plus1.getTime() - 60*60*1000);
+
+    return plus1;
+  };
 
   return Backbone.View.extend({
     tagName: 'tr',
