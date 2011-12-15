@@ -5,5 +5,7 @@
   , "dependencies": {
       "express": "2.5.2"
     , "jade": ">= 0.0.1"
+    , "dirty": "0.9.5"
+    , "dirty-uuid": ">= 0.0.1"
   }
 }
