@@ -2,8 +2,10 @@
  * Module dependencies.
  */
 
-var express = require('express'),
-    http = require('http');
+var express = require('express')
+  , http = require('http')
+  , db = require('dirty')('appointments.db')
+  , dirtyUuid = require('dirty-uuid');
 
 var app = module.exports = express.createServer();
 
@@ -34,102 +36,43 @@ app.get('/', function(req, res){
   });
 });
 
+// TODO: honor the date parameter
 app.get('/appointments', function(req, res){
-  var options = {
-    host: 'localhost',
-    port: 5984,
-    path: '/calendar/_design/appointments/_view/by_month?key="'+ req.param('date') +'"'
-  };
+  console.log("[get /appointments]");
 
-  http.get(options, function(couch_response) {
-    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
-
-    couch_response.pipe(res);
-  }).on('error', function(e) {
-    console.log("Got error: " + e.message);
+  var list = [];
+  db.forEach(function(id, appointment) {
+    if (appointment) list.push(appointment);
   });
+
+  res.send(JSON.stringify(list));
 });
 
-
-// app.get('/appointments/:id', function(req, res){
-//   var options = {
-//     host: 'localhost',
-//     port: 5984,
-//     path: '/calendar/' + req.params.id
-//   };
-
-//   http.get(options, function(couch_response) {
-//     console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
-
-//     couch_response.pipe(res);
-//   }).on('error', function(e) {
-//     console.log("Got error: " + e.message);
-//   });
-// });
-
 app.delete('/appointments/:id', function(req, res){
-  var options = {
-    method: 'DELETE',
-    host: 'localhost',
-    port: 5984,
-    path: '/calendar/' + req.params.id,
-    headers: req.headers
-  };
-
-  var couch_req = http.request(options, function(couch_response) {
-    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
-
-    // TODO: apply this everywhere
-    res.statusCode = couch_response.statusCode;
-    couch_response.pipe(res);
-  }).on('error', function(e) {
-    console.log("Got error: " + e.message);
-  });
-
-  couch_req.end();
+  console.log("[delete /appointments] " +  req.params.id);
+  db.rm(req.params.id);
+  res.send('{}');
 });
 
 app.put('/appointments/:id', function(req, res){
-  var options = {
-    method: 'PUT',
-    host: 'localhost',
-    port: 5984,
-    path: '/calendar/' + req.params.id,
-    headers: req.headers
-  };
+  console.log("[put /appointments] " +  req.params.id);
 
-  var couch_req = http.request(options, function(couch_response) {
-    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+  db.set(req.params.id, req.body);
 
-    res.statusCode = couch_response.statusCode;
-    couch_response.pipe(res);
-  }).on('error', function(e) {
-    console.log("Got error: " + e.message);
-  });
-
-  couch_req.write(JSON.stringify(req.body));
-  couch_req.end();
+  res.statusCode = 201;
+  res.send(JSON.stringify(req.body));
 });
 
 app.post('/appointments', function(req, res){
-  var options = {
-    method: 'POST',
-    host: 'localhost',
-    port: 5984,
-    path: '/calendar',
-    headers: req.headers
-  };
+  console.log("[post /appointments]");
 
-  var couch_req = http.request(options, function(couch_response) {
-    console.log("Got response: %s %s:%d%s", couch_response.statusCode, options.host, options.port, options.path);
+  var appointment = req.body;
+  appointment['id'] = dirtyUuid();
 
-    couch_response.pipe(res);
-  }).on('error', function(e) {
-    console.log("Got error: " + e.message);
-  });
+  db.set(appointment['id'], appointment);
 
-  couch_req.write(JSON.stringify(req.body));
-  couch_req.end();
+  res.statusCode = 201;
+  res.send(JSON.stringify(appointment));
 });
 
 if (app.settings.env != 'test') {

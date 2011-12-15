@@ -35,9 +35,6 @@ define(function(require) {
     },
     getDate: function() {
       return this.date;
-    },
-    parse: function(response) {
-      return _(response.rows).map(function(row) { return row.value ;});
     }
   });
 });

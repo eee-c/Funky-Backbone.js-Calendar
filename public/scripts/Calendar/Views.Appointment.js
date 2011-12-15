@@ -39,13 +39,8 @@ define(function(require) {
       return false;
     },
     deleteError: function(model, error) {
-      // TODO: blame the user instead of the programmer...
-      if (error.status == 409) {
-        alert("This site does not understand CouchDB revisions.");
-      }
-      else {
-        alert("This site was made by an idiot.");
-      }
+      alert("This site was made by an idiot.");
+      console.log(error);
     },
     remove: function() {
       $(this.el).remove();
