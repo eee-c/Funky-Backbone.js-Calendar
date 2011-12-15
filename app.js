@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 
-var express = require('express-unstable'),
+var express = require('express'),
     http = require('http');
 
 var app = module.exports = express.createServer();
