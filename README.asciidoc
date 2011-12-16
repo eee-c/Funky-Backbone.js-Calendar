@@ -2,9 +2,18 @@
 
 This is the code that I am using to explore Backbone.js in http://japhr.blogspot.com[my blog].
 
-The backend is written in node.js and requires express.js and the jade package for templating.
+== Installation
 
-The backend storage is CouchDB.
+*Requirements:* the backend server and data store requires only node.js (0.6+) and npm.
+
+1. Clone this repo: `git clone git://github.com/eee-c/Funky-Backbone.js-Calendar.git`
+2. In the repo, install dependencies: `npm install`
+
+There is no step three!  You can run the server with:
+
+----
+node app
+----
 
 == This is NOT good code
 
