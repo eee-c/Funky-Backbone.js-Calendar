@@ -1,6 +1,7 @@
 
 begin
   require 'jasmine'
+  require './jasmine_server'
   load 'jasmine/tasks/jasmine.rake'
 rescue LoadError
   task :jasmine do

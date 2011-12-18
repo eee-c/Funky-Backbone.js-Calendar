@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta content="text/html;charset=UTF-8" http-equiv="Content-Type"/>
+  <title>Jasmine suite</title>
+  <link rel="shortcut icon" type="image/png" href="/__JASMINE_ROOT__/images/jasmine_favicon.png">
+  <% css_files.each do |css_file| %>
+    <link rel="stylesheet" href="<%= css_file %>" type="text/css" media="screen"/>
+  <% end %>
+
+  <% jasmine_files.each do |jasmine_file| %>
+  <script src="<%= jasmine_file %>" type="text/javascript"></script>
+  <% end %>
+
+   <script data-main="/public/scripts/main"  src="/public/scripts/require.js"></script>
+<script type="text/javascript">
+require.config({
+  baseUrl: '../public/scripts',
+  paths: {
+    'jquery': 'jquery.min',
+    'jquery-ui': 'jquery-ui.min'
+  }
+});
+
+require(['Calendar', 'backbone'], function(Calendar, Backbone){
+  window.Cal = Calendar;
+  window.Backbone = Backbone;
+
+  var jasmineEnv = jasmine.getEnv();
+  jasmineEnv.updateInterval = 1000;
+
+  var trivialReporter = new jasmine.TrivialReporter();
+
+  jasmineEnv.addReporter(trivialReporter);
+
+  jasmineEnv.specFilter = function(spec) {
+    return trivialReporter.specFilter(spec);
+  };
+
+  jasmineEnv.execute();
+});
+</script>
+
+  <% js_files.each do |js_file| %>
+  <script src="<%= js_file %>" type="text/javascript"></script>
+  <% end %>
+
+</head>
+<body>
+<div id="jasmine_content"></div>
+</body>
+</html>
