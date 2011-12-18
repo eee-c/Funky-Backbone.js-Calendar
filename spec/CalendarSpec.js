@@ -5,17 +5,13 @@ describe("Calendar", function() {
     , month = m<10 ? '0'+m : m
     , fourteenth = year + '-' + month + "-14"
     , fifteenth = year + '-' + month + "-15"
-    , couch_doc = {
-        "_id": "42",
-        "_rev": "1-2345",
+    , doc = {
+        "id": "42",
         "title": "Get Funky",
         "description": "asdf",
         "startDate": fifteenth
       }
-    , doc_list = {
-        "total_rows": 1,
-        "rows":[{"value": couch_doc}]
-      };
+    , doc_list = [doc];
 
   beforeEach(function() {
     // stub XHR requests with sinon.js
@@ -150,16 +146,6 @@ describe("Calendar", function() {
     });
 
     describe("updating an appointment", function (){
-      it("sets CouchDB revision headers", function() {
-        var spy = spyOn(Backbone.Model.prototype, 'save').andCallThrough();
-        var appointment = calendar.appointments.at(0);
-
-        appointment.save({title: "Changed"});
-
-        expect(spy.mostRecentCall.args[1].headers)
-          .toEqual({ 'If-Match': '1-2345' });
-      });
-
       it("binds click events on the appointment to an edit dialog", function() {
         $('.title', '#' + fifteenth).click();
         expect($('#calendar-edit-appointment')).toBeVisible();
@@ -192,8 +178,8 @@ describe("Calendar", function() {
       window.calendar = new Cal($('#calendar'));
       Backbone.history.navigate('#month/1999-12', true);
 
-      couch_doc['startDate'] = "1999-12-31";
-      couch_doc['title'] = "Party";
+      doc['startDate'] = "1999-12-31";
+      doc['title'] = "Party";
 
       // populate appointments for this month
       server.respondWith('GET', /\/appointments/,
