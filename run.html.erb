@@ -26,15 +26,15 @@ require(['Calendar', 'backbone'], function(Calendar, Backbone){
   window.Cal = Calendar;
   window.Backbone = Backbone;
 
-  var jasmineEnv = jasmine.getEnv();
+  window.jasmineEnv = jasmine.getEnv();
   jasmineEnv.updateInterval = 1000;
 
-  var trivialReporter = new jasmine.TrivialReporter();
+  var reporter = new jasmine.TrivialReporter();
 
-  jasmineEnv.addReporter(trivialReporter);
+  jasmineEnv.addReporter(reporter);
 
   jasmineEnv.specFilter = function(spec) {
-    return trivialReporter.specFilter(spec);
+    return reporter.specFilter(spec);
   };
 
   jasmineEnv.execute();
