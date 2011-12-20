@@ -60,17 +60,53 @@ page.open(phantom.args[0], function(status){
             });
         }, function(){
             page.evaluate(function(){
-                console.log(document.body.querySelector('.description').innerText);
-                list = document.body.querySelectorAll('div.jasmine_reporter > div.suite.failed > div.suite.failed');
-                for (i = 0; i < list.length; ++i) {
-                    el = list[i];
-                    desc = el.querySelectorAll('.description');
-                    console.log('');
-                    for (j = 0; j < desc.length; ++j) {
-                        console.log(desc[j].innerText);
-                    }
+                var passed = jasmineEnv.currentRunner().results().passed();
+
+                console.log('');
+                if (passed) {
+                  console.log('Succeeded.');
+                }
+                else {
+                  console.log('Failed: ' + jasmineEnv.currentRunner().results().failedCount);
+                }
+                console.log('');
+
+                function has_message(el) {
+                  var yes = false;
+                  for (var i=0; i < el.children.length; i++) {
+                    if (el.children[i].className == 'spec failed') yes = true;
+                  }
+                  return yes;
+                }
+
+                function failed_children(el) {
+                  var failed = [];
+                  for (var i=0; i < el.children.length; i++) {
+                    if (el.children[i].className == 'suite failed') failed.push(el.children[i]);
+                  }
+                  return failed;
+                }
+
+                function log_failure(failure_el, indent) {
+                  if (typeof(indent) == 'undefined') indent = '';
+
+                  console.log(indent + failure_el.querySelector('.description').innerText);
+
+                  if (has_message(failure_el)) {
+                    console.log(indent + '  ' + failure_el.querySelector('.messages > .fail').innerText);
+                  }
+                  else {
+                    failed_children(failure_el).forEach(function (failed_child) {
+                      log_failure(failed_child, indent + '  ');
+                    });
+                  }
+                }
+
+                if (!passed) {
+                  log_failure(document.body.querySelectorAll('div.jasmine_reporter > div.suite.failed')[0]);
                 }
             });
+            console.log('');
             phantom.exit();
         });
     }
