@@ -62,7 +62,7 @@ page.open(phantom.args[0], function(status){
         });
       },
       function(){
-        page.evaluate(function(){
+        var passed = page.evaluate(function(){
           var passed = jasmineEnv.currentRunner().results().passed();
 
           console.log('');
@@ -109,9 +109,10 @@ page.open(phantom.args[0], function(status){
             log_failure(document.body.querySelectorAll('div.jasmine_reporter > div.suite.failed')[0]);
           }
 
+          return passed;
         });
         console.log('');
-        phantom.exit();
+        phantom.exit(passed ? 0 : 1);
       }
     );
   }
