@@ -32,9 +32,12 @@ define(function(require) {
       this.model.destroy();
       return false;
     },
+    makeActive: function() {
+      $(this.el).addClass('active');
+    },
     handleEdit: function(e) {
       console.log("editClick");
-
+      this.makeActive();
       AppointmentEdit.reset({model: this.model});
       return false;
     },

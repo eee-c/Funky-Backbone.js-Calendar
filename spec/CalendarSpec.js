@@ -1,3 +1,44 @@
+describe("Views.Appointment", function() {
+  var el = $('<div></div>')
+    , appointment = {
+        title: 'Title Foo',
+        description: 'Description bar.'
+      }
+    , model = {
+        get: function() {return '2012-01-01';},
+        bind: function() {},
+        toJSON: function() {return appointment;}
+      };
+
+  afterEach(function() {
+    $('#calendar-add-appointment').dialog('close');
+    // $('#calendar-add-appointment').remove();
+
+    $('#calendar-edit-appointment').dialog('close');
+    // $('#calendar-edit-appointment').remove();
+  });
+
+  it("shows the title", function() {
+    require(['Calendar/Views.Appointment'], function(ViewClass) {
+      var view = new ViewClass({model: model, el: el});
+      view.render();
+      expect($(el)).toHaveText(/Title Foo/);
+    });
+  });
+
+  it("makes the view active when clicked", function() {
+    require(['Calendar/Views.Appointment'], function(ViewClass) {
+      var view = new ViewClass({model: model, el: el});
+      view.render();
+
+      sinon.spy(view, 'makeActive');
+      $('.title', el).click();
+
+      expect(view.makeActive.calledOnce).toBeTruthy();
+    });
+  });
+});
+
 describe("Calendar", function() {
   var server
     , year = (new Date).getFullYear()

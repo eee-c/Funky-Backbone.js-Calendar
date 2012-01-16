@@ -27,6 +27,8 @@
   <!-- script type="text/javascript" src="../public/scripts/calendar.js"></script -->
   <script type="text/javascript" src="../public/scripts/require.js"></script>
   <script type="text/javascript">
+window.require = require;
+
 require.config({
   baseUrl: '../public/scripts',
   paths: {
@@ -35,9 +37,10 @@ require.config({
   }
 });
 
-require(['Calendar', 'backbone'], function(Calendar, Backbone){
+require(['Calendar', 'backbone', 'Calendar/Views.Appointment'], function(Calendar, Backbone, ViewClass){
   window.Cal = Calendar;
   window.Backbone = Backbone;
+  window.ViewClass = ViewClass;
 
   var jasmineEnv = jasmine.getEnv();
   jasmineEnv.updateInterval = 1000;
