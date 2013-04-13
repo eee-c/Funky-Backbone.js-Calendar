@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 
-var express = require('express-unstable'),
+var express = require('express'),
     http = require('http');
 
 var app = module.exports = express.createServer();
@@ -134,5 +134,5 @@ app.post('/appointments', function(req, res){
 
 if (app.settings.env != 'test') {
   app.listen(3000);
-  console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+  // console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 }
