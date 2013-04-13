@@ -82,8 +82,8 @@ window.Cal = function(root_el) {
         options.model.bind('change', this.render, this);
       },
       render: function() {
-        $(this.el).html(this.template(this.model.toJSON()));
-        this.container.append($(this.el));
+        this.$el.html(this.template(this.model.toJSON()));
+        this.container.append(this.$el);
         return this;
       },
       events: {
@@ -112,7 +112,7 @@ window.Cal = function(root_el) {
         }
       },
       remove: function() {
-        $(this.el).remove();
+        this.$el.remove();
       }
     });
 
@@ -127,11 +127,11 @@ window.Cal = function(root_el) {
 
         var header = new CalendarMonthHeader();
         header.render();
-        $(this.el).append(header.el);
+        this.$el.append(header.el);
 
         var body = new CalendarMonthBody({date: this.date});
         body.render();
-        $(this.el).append(body.el);
+        this.$el.append(body.el);
 
         return this;
       }
@@ -140,7 +140,7 @@ window.Cal = function(root_el) {
     var CalendarMonthHeader = Backbone.View.extend({
       tagName: 'tr',
       render: function() {
-        $(this.el).html('<th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th>');
+        this.$el.html('<th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th>');
       }
     });
 
@@ -176,7 +176,7 @@ window.Cal = function(root_el) {
         for (var i=0; i<7; i++) {
           var day = new CalendarMonthDay({date: date});
           day.render();
-          $(this.el).append(day.el);
+          this.$el.append(day.el);
 
           date = Helpers.dayAfter(date);
         }
@@ -191,7 +191,7 @@ window.Cal = function(root_el) {
       render: function() {
         this.el.id = Helpers.to_iso8601(this.date);
         var html = '<span class="day-of-month">' + this.date.getDate() + '</span>';
-        $(this.el).html(html);
+        this.$el.html(html);
 
         return this;
       },
@@ -209,7 +209,7 @@ window.Cal = function(root_el) {
       initialize: function() {
         this.ensureDom();
         this.activateDialog();
-        this.el = $(this.el).parent();
+        this.el = this.$el.parent();
         this.delegateEvents();
       },
       reset: function(options) {
@@ -246,10 +246,10 @@ window.Cal = function(root_el) {
       ensureDom: function() {
         if ($('#calendar-edit-appointment').length > 0) return;
 
-        $(this.el).attr('id', 'calendar-edit-appointment');
-        $(this.el).attr('title', 'Edit calendar appointment');
+        this.$el.attr('id', 'calendar-edit-appointment');
+        this.$el.attr('title', 'Edit calendar appointment');
 
-        $(this.el).append(
+        this.$el.append(
           '<h2 class="startDate"></h2>' +
           '<p>Title</p>' +
           '<p>' +
@@ -262,7 +262,7 @@ window.Cal = function(root_el) {
         );
       },
       activateDialog: function() {
-        $(this.el).dialog({
+        this.$el.dialog({
           autoOpen: false,
           modal: true,
           buttons: [
@@ -279,7 +279,7 @@ window.Cal = function(root_el) {
       initialize: function() {
         this.ensureDom();
         this.activateDialog();
-        this.el = $(this.el).parent();
+        this.el = this.$el.parent();
         this.delegateEvents();
       },
       reset: function(options) {
@@ -310,27 +310,31 @@ window.Cal = function(root_el) {
       ensureDom: function() {
         if ($('#calendar-add-appointment').length > 0) return;
 
-        $(this.el).attr('id', 'calendar-add-appointment');
-        $(this.el).attr('title', 'Add calendar appointment');
+        this.$el.attr('id', 'calendar-add-appointment');
+        this.$el.attr('title', 'Add calendar appointment');
 
-        $(this.el).append(this.make('h2', {'class': 'startDate'}));
-        $(this.el).append(this.make('p', {}, 'Title'));
-        $(this.el).append(this.make('p', {},
-          this.make('input', {'type': "text", 'name': "title", 'class': "title"})
-        ));
+        this.$el.append('<h2 class=startDate></h2>');
+        this.$el.append('<p>Title</p>');
+        this.$el.append(
+          '<p>' +
+            '<input type=text name=title class=title>' +
+          '</p>'
+        );
 
-        $(this.el).append(this.make('p', {}, 'Description'));
-        $(this.el).append(this.make('p', {},
-          this.make('input', {'type': "text", 'name': "description", 'class': "description"})
-        ));
+        this.$el.append('<p>Description</p>');
+        this.$el.append(
+          '<p>' +
+            '<input type=text name=description class=description>' +
+          '</p>'
+        );
       },
       activateDialog: function() {
-        $(this.el).dialog({
+        this.$el.dialog({
           autoOpen: false,
           modal: true,
           buttons: [
             { text: "OK",
-              class: "ok",
+              'class': "ok",
               click: function() { $(this).dialog("close"); } },
             { text: "Cancel",
               click: function() { $(this).dialog("close"); } } ]
@@ -352,7 +356,7 @@ window.Cal = function(root_el) {
       ),
       render: function() {
         var date = this.collection.getDate();
-        $(this.el).html(this.template({
+        this.$el.html(this.template({
           previous_date: Helpers.previousMonth(date),
           next_date: Helpers.nextMonth(date)
         }));
@@ -383,7 +387,7 @@ window.Cal = function(root_el) {
           replaceWith(this.el);
       },
       render: function() {
-        $(this.el).html(' (' + this.collection.getDate() + ') ');
+        this.$el.html(' (' + this.collection.getDate() + ') ');
       }
     });
 
@@ -406,7 +410,7 @@ window.Cal = function(root_el) {
 
         var month = new CalendarMonth({date: date});
 
-        $(this.el).html(month.render().el);
+        this.$el.html(month.render().el);
       },
       initialize_appointment_views: function() {
         this.collection.
@@ -415,7 +419,7 @@ window.Cal = function(root_el) {
           bind('reset', _.bind(this.render_appointment_list, this));
       },
       initialize_navigation : function() {
-        $(this.el).after('<div id="calendar-navigation">');
+        this.$el.after('<div id="calendar-navigation">');
 
         var nav = new CalendarNavigation({
           el: $('#calendar-navigation'),
