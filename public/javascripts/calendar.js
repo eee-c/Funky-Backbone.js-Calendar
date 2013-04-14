@@ -1,27 +1,6 @@
 window.Cal = function(root_el) {
   var Models = (function() {
-    var Appointment = Backbone.Model.extend({
-      urlRoot : '/appointments',
-      initialize: function(attributes) {
-        if (!this.id)
-          this.id = attributes['_id'];
-      },
-      save: function(attributes, options) {
-        options || (options = {});
-        options['headers'] = {'If-Match': this.get("rev")};
-        Backbone.Model.prototype.save.call(this, attributes, options);
-      },
-      destroy: function() {
-        Backbone.Model.prototype.destroy.call(this, {
-          headers: {'If-Match': this.get("rev")}
-        });
-      },
-      get: function(attribute) {
-        return Backbone.Model.prototype.get.call(this, "_" + attribute) ||
-               Backbone.Model.prototype.get.call(this, attribute);
-      }
-    });
-
+    var Appointment = Backbone.Model.extend({});
     return {Appointment: Appointment};
   })();
 
@@ -41,9 +20,9 @@ window.Cal = function(root_el) {
 
         var collection = this;
         var success = options.success;
-        options.success = function (resp, status, xhr) {
+        options.success = function (collection, resp, opt) {
           collection.trigger('calendar:change:date');
-          if (success) success(collection, resp);
+          if (success) success(collection, resp, opt);
         };
         options.error = function () {
           console.log("[fetch] Dang");
@@ -54,13 +33,10 @@ window.Cal = function(root_el) {
       },
       setDate: function(date) {
         this.date = date;
-        this.fetch();
+        this.fetch({reset:true});
       },
       getDate: function() {
         return this.date;
-      },
-      parse: function(response) {
-        return _(response.rows).map(function(row) { return row.value ;});
       }
     });
 
@@ -77,9 +53,9 @@ window.Cal = function(root_el) {
       ),
       initialize: function(options) {
         this.container = $('#' + this.model.get('startDate'));
-        options.model.bind('destroy', this.remove, this);
-        options.model.bind('error', this.deleteError, this);
-        options.model.bind('change', this.render, this);
+        this.listenTo(options.model, 'destroy', this.remove);
+        this.listenTo(options.model, 'error', this.deleteError);
+        this.listenTo(options.model, 'change', this.render);
       },
       render: function() {
         this.$el.html(this.template(this.model.toJSON()));
@@ -91,25 +67,15 @@ window.Cal = function(root_el) {
         'click .delete': 'handleDelete'
       },
       handleDelete: function(e) {
-        console.log("deleteClick");
-
         this.model.destroy();
         return false;
       },
       handleEdit: function(e) {
-        console.log("editClick");
-
         AppointmentEdit.reset({model: this.model});
         return false;
       },
       deleteError: function(model, error) {
-        // TODO: blame the user instead of the programmer...
-        if (error.status == 409) {
-          alert("This site does not understand CouchDB revisions.");
-        }
-        else {
-          alert("This site was made by an idiot.");
-        }
+        alert("This site was made by an idiot.");
       },
       remove: function() {
         this.$el.remove();
@@ -199,8 +165,6 @@ window.Cal = function(root_el) {
         'click': 'addClick'
       },
       addClick: function(e) {
-        console.log("addClick");
-
         AppointmentAdd.reset({startDate: this.el.id});
       }
     });
@@ -227,12 +191,12 @@ window.Cal = function(root_el) {
           val(this.model.get("description"));
       },
       events : {
-        'click .ok': 'update',
-        'keypress input[type=text]': 'updateOnEnter'
+         'keypress input[type=text]': 'updateOnEnter'
       },
       updateOnEnter: function(e) {
         if (e.keyCode != 13) return;
-        $('.ok', this.el).click();
+        this.update();
+        $('button:visible:first').click();
       },
       update: function() {
         if (!this.model) return;
@@ -262,15 +226,19 @@ window.Cal = function(root_el) {
         );
       },
       activateDialog: function() {
+        var that = this;
         this.$el.dialog({
           autoOpen: false,
           modal: true,
-          buttons: [
-            { text: "OK",
-              class: "ok",
-              click: function() { $(this).dialog("close"); } },
-            { text: "Cancel",
-              click: function() { $(this).dialog("close"); } } ]
+          buttons: {
+            "OK": function() {
+              that.update();
+              $(this).dialog("close");
+            },
+            "Cancel": function() {
+              $(this).dialog("close");
+            }
+          }
         });
       }
     }));
@@ -293,12 +261,12 @@ window.Cal = function(root_el) {
         $('.description', this.el).val("");
       },
       events: {
-        'click .ok':  'create',
         'keypress input[type=text]': 'createOnEnter'
       },
       createOnEnter: function(e) {
         if (e.keyCode != 13) return;
-        $('.ok', this.el).click();
+        this.create();
+        $('button:visible:first').click();
       },
       create: function() {
         appointment_collection.create({
@@ -329,22 +297,26 @@ window.Cal = function(root_el) {
         );
       },
       activateDialog: function() {
+        var that = this;
         this.$el.dialog({
           autoOpen: false,
           modal: true,
-          buttons: [
-            { text: "OK",
-              'class': "ok",
-              click: function() { $(this).dialog("close"); } },
-            { text: "Cancel",
-              click: function() { $(this).dialog("close"); } } ]
+          buttons: {
+            "OK": function() {
+              that.create();
+              $(this).dialog("close");
+            },
+            "Cancel": function() {
+              $(this).dialog("close");
+            }
+          }
         });
       }
     }));
 
     var CalendarNavigation = Backbone.View.extend({
       initialize: function(options) {
-        options.collection.bind('calendar:change:date', this.render, this);
+        this.listenTo(options.collection, 'calendar:change:date', this.render);
       },
       template: template(
         '<div class="previous">' +
@@ -381,7 +353,7 @@ window.Cal = function(root_el) {
     var TitleView = Backbone.View.extend({
       tagName: 'span',
       initialize: function(options) {
-        options.collection.bind('calendar:change:date', this.render, this);
+        this.listenTo(options.collection, 'calendar:change:date', this.render);
 
         $('span.year-and-month', 'h1').
           replaceWith(this.el);
@@ -413,10 +385,8 @@ window.Cal = function(root_el) {
         this.$el.html(month.render().el);
       },
       initialize_appointment_views: function() {
-        this.collection.
-          bind('add', _.bind(this.render_appointment, this));
-        this.collection.
-          bind('reset', _.bind(this.render_appointment_list, this));
+        this.listenTo(this.collection, 'add', this.render_appointment);
+        this.listenTo(this.collection, 'reset', this.render_appointment_list);
       },
       initialize_navigation : function() {
         this.$el.after('<div id="calendar-navigation">');
@@ -455,13 +425,13 @@ window.Cal = function(root_el) {
     },
 
     setDefault: function() {
-      console.log("[setDefault]");
+      // console.log("[setDefault]");
       var month = Helpers.to_iso8601(new Date).substr(0,7);
       Backbone.history.navigate('#month/' + month, true);
     },
 
     setMonth: function(date) {
-      console.log("[setMonth] %s", date);
+      // console.log("[setMonth] %s", date);
       this.application.setDate(date);
     }
   });
