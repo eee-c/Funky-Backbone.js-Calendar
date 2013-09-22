@@ -13,7 +13,12 @@ final String URL_ROOT = '${Kruk.SERVER_ROOT}/widgets';
 final iso8601 = new DateFormat('yyyy-MM-dd');
 
 final today = new DateTime.now();
-final fifteenth = new DateTime(today.year, today.month, 15);
+
+final _fourteenth = new DateTime(today.year, today.month, 14);
+final fourteenth = iso8601.format(_fourteenth);
+
+final _fifteenth = new DateTime(today.year, today.month, 15);
+final fifteenth = iso8601.format(_fifteenth);
 
 main() {
   group("the initial view", (){
@@ -25,34 +30,33 @@ main() {
       el = document.body.append(new Element.html('<div id=calendar>'));
 
        var doc = '''
-            {
-              "title": "Get Funky",
-              "description": "asdf",
-              "startDate": "${iso8601.format(fifteenth)}"
-            }''';
+         {
+           "title": "Get Funky",
+           "description": "asdf",
+           "startDate": "${fifteenth}"
+         }''';
 
       return Future.wait([
         Kruk.create(doc),
         Kruk.alias('/widgets', as: '/appointments')
       ]);
-
     });
 
     tearDown((){
+      js.context.Backbone.history.navigate('');
+
       el.remove();
+      queryAll('#calendar-navigation').forEach((el)=> el.remove());
       return Kruk.deleteAll();
     });
 
     test("populates the calendar with appointments", (){
-      // js.context.Backbone.history.loadUrl();
       new js.Proxy(js.context.Cal, query('#calendar'));
+      js.context.Backbone.history.loadUrl();
 
-      var _id = iso8601.format(fifteenth);
       var cell = queryAll('td').
-        where((el)=> el.id == _id).
+        where((el)=> el.id == fifteenth).
         first;
-
-      print('Contents (${_id}): ${cell.text}');
 
       new Timer(
         new Duration(milliseconds: 10),
@@ -60,8 +64,24 @@ main() {
           expect(cell.text, matches("Get Funky"));
         })
       );
-
     });
+
+    test("populates the calendar with appointments (copy)", (){
+      new js.Proxy(js.context.Cal, query('#calendar'));
+      js.context.Backbone.history.loadUrl();
+
+      var cell = queryAll('td').
+        where((el)=> el.id == fifteenth).
+        first;
+
+      new Timer(
+        new Duration(milliseconds: 10),
+        expectAsync0((){
+          expect(cell.text, matches("Get Funky"));
+        })
+      );
+    });
+
   });
 
   pollForDone(testCases);
