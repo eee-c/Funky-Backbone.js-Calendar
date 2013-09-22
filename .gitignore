@@ -1,3 +1,5 @@
 node_modules
 fixtures
 appointments.db
+packages
+pubspec.lock

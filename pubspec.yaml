@@ -1,0 +1,6 @@
+name: funky_calendar
+dependencies:
+  unittest: any
+  plummbur_kruk: any
+  intl: any
+  js: any

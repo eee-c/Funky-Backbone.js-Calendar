@@ -1,0 +1,36 @@
+<html>
+<head>
+  <title>Funky Calendar Test Suite</title>
+
+
+  <!-- Library files -->
+  <script type="text/javascript" src="../public/javascripts/jquery.min.js"></script>
+  <script type="text/javascript" src="../public/javascripts/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="../public/javascripts/underscore.js"></script>
+  <script type="text/javascript" src="../public/javascripts/backbone.js"></script>
+
+  <!-- include source files here... -->
+  <script type="text/javascript" src="../public/javascripts/calendar.js"></script>
+
+  <!-- Dart tests... -->
+  <script type="application/dart" src="test.dart"></script>
+
+  <script type='text/javascript'>
+    var testRunner = window.testRunner || window.layoutTestController;
+    if (testRunner) {
+      function handleMessage(m) {
+        if (m.data == 'done') {
+          testRunner.notifyDone();
+        }
+      }
+      testRunner.waitUntilDone();
+      window.addEventListener("message", handleMessage, false);
+    }
+  </script>
+  <script src="packages/browser/dart.js"></script>
+  <script src="packages/browser/interop.js"></script>
+</head>
+
+<body>
+</body>
+</html>
