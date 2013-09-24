@@ -27,7 +27,7 @@ main() {
     setUp((){
       document.head.append(new BaseElement()..href = Kruk.SERVER_ROOT);;
 
-      el = document.body.append(new Element.html('<div id=calendar>'));
+      el = document.body.append(new Element.html('<div id=calendar-${currentTestCase.id}>'));
 
        var doc = '''
          {
@@ -47,11 +47,11 @@ main() {
 
       el.remove();
       queryAll('#calendar-navigation').forEach((el)=> el.remove());
-      return Kruk.deleteAll();
+      // return Kruk.deleteAll();
     });
 
     test("populates the calendar with appointments", (){
-      new js.Proxy(js.context.Cal, query('#calendar'));
+      new js.Proxy(js.context.Cal, el);
       js.context.Backbone.history.loadUrl();
 
       var cell = queryAll('td').
@@ -59,25 +59,45 @@ main() {
         first;
 
       new Timer(
-        new Duration(milliseconds: 10),
+        new Duration(milliseconds: 100),
         expectAsync0((){
           expect(cell.text, matches("Get Funky"));
         })
       );
     });
 
-    test("populates the calendar with appointments (copy)", (){
-      new js.Proxy(js.context.Cal, query('#calendar'));
+    solo_test("can create new appointments", (){
+      new js.Proxy(js.context.Cal, el);
       js.context.Backbone.history.loadUrl();
 
       var cell = queryAll('td').
-        where((el)=> el.id == fifteenth).
-        first;
+        where((el)=> el.id == fourteenth).
+        first
+          ..click();
+
+      query('#calendar-add-appointment')
+        ..query('input.title').
+          value = 'Test Appointment'
+        ..query('input.description').
+          value = 'asdf';
+
+      var ok = query('.ui-dialog-buttonset').
+        query('button').
+        query('span');
+
+      print(ok.text);
+
+      // query('.ui-dialog-buttonset').
+      //   query('button').
+      //   query('span').
+      //   click();
+
+      js.context.jQuery('.ui-dialog-buttonset button').click();
 
       new Timer(
-        new Duration(milliseconds: 10),
+        new Duration(milliseconds: 100),
         expectAsync0((){
-          expect(cell.text, matches("Get Funky"));
+          expect(cell.text, matches("Test Appointment"));
         })
       );
     });
